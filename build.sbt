@@ -68,3 +68,10 @@ lazy val root = project
         DependencyInjection ++
         HttpDep
   )
+
+ThisBuild / publishMavenStyle := true
+ThisBuild / licenses := List(
+  "Apache 2" -> new URL("http://www.apache.org/licenses/LICENSE-2.0.txt")
+)
+
+credentials += Credentials(Path.userHome / ".sbt" / "sonatype_credentials")
