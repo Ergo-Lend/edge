@@ -5,7 +5,7 @@ import scala.language.postfixOps
 name := """edge"""
 organization := """io.exle"""
 scalaVersion := "2.12.15"
-version := "1.0"
+version := "0.1"
 
 lazy val NexusReleases = "Sonatype Releases".at(
   "https://s01.oss.sonatype.org/content/repositories/releases"

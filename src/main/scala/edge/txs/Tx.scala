@@ -5,33 +5,19 @@ import errors.{ProveException, ReducedException}
 import boxes.CustomBoxData
 import org.bouncycastle.util.encoders.Hex
 import org.ergoplatform.P2PKAddress
-import org.ergoplatform.appkit.{
-  Address,
-  BlockchainContext,
-  ErgoProver,
-  ErgoValue,
-  InputBox,
-  NetworkType,
-  OutBox,
-  ReducedTransaction,
-  SignedTransaction,
-  UnsignedTransaction,
-  UnsignedTransactionBuilder
-}
+import org.ergoplatform.appkit.{Address, BlockchainContext, ErgoProver, ErgoToken, ErgoValue, InputBox, NetworkType, OutBox, ReducedTransaction, SignedTransaction, UnsignedTransaction, UnsignedTransactionBuilder}
 import scorex.crypto.hash.Blake2b256
 import special.collection.Coll
 
-import scala.collection.JavaConverters.{
-  collectionAsScalaIterableConverter,
-  seqAsJavaListConverter
-}
+import scala.collection.JavaConverters.{collectionAsScalaIterableConverter, seqAsJavaListConverter}
 
 trait Tx {
   val changeAddress: P2PKAddress
 
   var signedTx: Option[SignedTransaction] = None
   val inputBoxes: Seq[InputBox]
-  val dataInputs: Seq[InputBox] = Seq.empty
+  lazy val dataInputs: Seq[InputBox] = Seq.empty
+  lazy val tokensToBurn: Seq[ErgoToken] = Seq.empty
 
   val dummyTxId: String =
     "ce552663312afc2379a91f803c93e2b10b424f176fbc930055c10def2fd88a5d"
@@ -39,7 +25,7 @@ trait Tx {
 
   def getOutBoxes: Seq[OutBox]
 
-  def getCustomOutBoxes(customData: Seq[CustomBoxData]): Seq[OutBox]
+  def getCustomOutBoxes(customData: Seq[CustomBoxData]): Seq[OutBox] = Seq.empty
 
   def getOutBoxesAsInputBoxes(txId: String): Seq[InputBox] =
     // Increment number
@@ -182,24 +168,30 @@ trait Tx {
     val txB: UnsignedTransactionBuilder = ctx.newTxBuilder()
     val outBoxes: Seq[OutBox] = getOutBoxes
 
-    val tx: UnsignedTransaction = dataInputs match {
+    val essentialsTxB: UnsignedTransactionBuilder =
+      txB
+        .boxesToSpend(inputBoxes.asJava)
+        .outputs(outBoxes: _*)
+        .fee(ErgCommons.MinMinerFee)
+        .sendChangeTo(changeAddress)
+
+    val txBWithDataInputs: UnsignedTransactionBuilder = dataInputs match {
       case Nil =>
-        txB
-          .boxesToSpend(inputBoxes.asJava)
-          .outputs(outBoxes: _*)
-          .fee(ErgCommons.MinMinerFee)
-          .sendChangeTo(changeAddress)
-          .build()
+        essentialsTxB
       case _ =>
-        txB
-          .boxesToSpend(inputBoxes.asJava)
-          .outputs(outBoxes: _*)
+        essentialsTxB
           .withDataInputs(dataInputs.asJava)
-          .fee(ErgCommons.MinMinerFee)
-          .sendChangeTo(changeAddress)
-          .build()
     }
-    tx
+
+    val txBWithTokenBurn: UnsignedTransactionBuilder = tokensToBurn match {
+      case Nil =>
+        txBWithDataInputs
+      case _ =>
+        txBWithDataInputs
+          .tokensToBurn(tokensToBurn: _*)
+    }
+
+    txBWithTokenBurn.build
   }
 
   def signTx: SignedTransaction =

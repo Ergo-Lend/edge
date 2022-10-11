@@ -109,7 +109,12 @@ abstract class Explorer(nodeInfo: NodeInfo) {
       case _: Throwable => Json.Null
     }
 
-  def getUnspentBoxById(boxId: String): Json =
+  /**
+   * Get Box by Id, spent or unspent
+   * @param boxId
+   * @return
+   */
+  def getBoxById(boxId: String): Json =
     try {
       GetRequest.httpGet(s"$boxesP1/$boxId")
     } catch {

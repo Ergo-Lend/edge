@@ -99,6 +99,7 @@ object ErgoJson {
         case CollByte     => getRegisterAsCollByte(registerJson)
         case CollCollByte => getRegisterAsCollCollByte(registerJson)
         case CollLong     => getRegisterAsCollLong(registerJson)
+        case PairIntCollByte => getRegisterAsPairIntCollByte(registerJson)
         case _            => Option.empty
       }
     }
@@ -118,6 +119,29 @@ object ErgoJson {
           .toArray
       )
     }
+
+  private def getRegisterAsPairIntCollByte(registerJson: Option[ciJson]): Option[(Int, Array[Byte])] =
+  {
+    if (registerJson.isEmpty) {
+      Option.empty
+    } else {
+      val serializedValue: String = getRegisterValue(registerJson.get)
+      val value: (Int, Coll[Byte]) =
+        ErgoValue
+          .fromHex(serializedValue)
+          .getValue
+          .asInstanceOf[(Int, Coll[Byte])]
+      if (value._2.nonEmpty) {
+        Option(
+          value.copy(_2 = value._2.toArray)
+        )
+      } else {
+        Option(
+          (value._1, Array.emptyByteArray)
+        )
+      }
+    }
+  }
 
   private def getRegisterAsCollCollByte(
     registerJson: Option[ciJson]
@@ -172,5 +196,5 @@ object Register extends Enumeration {
 
 object RegisterType extends Enumeration {
   type RegisterType = Value
-  val CollByte, CollCollByte, CollLong = Value
+  val CollByte, CollCollByte, CollLong, PairIntCollByte = Value
 }
