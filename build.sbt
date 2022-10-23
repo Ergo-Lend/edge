@@ -3,9 +3,14 @@ import utils.commonScalacOptions
 import scala.language.postfixOps
 
 name := """edge"""
-organization := """io.exle"""
+organization := """io.github.ergo-lend"""
+organizationName := "exle"
+organizationHomepage := Some(url("https://github.com/ergo-lend/edge"))
 scalaVersion := "2.12.15"
 version := "0.1"
+description := "Ergo Development Generics"
+licenses := Seq("Apache 2" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt"))
+homepage := Some(url("https://github.com/Ergo-Lend/edge"))
 
 lazy val NexusReleases = "Sonatype Releases".at(
   "https://s01.oss.sonatype.org/content/repositories/releases"
@@ -15,21 +20,13 @@ lazy val NexusSnapshots = "Sonatype Snapshots".at(
   "https://s01.oss.sonatype.org/content/repositories/snapshots"
 )
 
-
 lazy val commonSettings = List(
   scalacOptions ++= commonScalacOptions,
-  scalaVersion := "2.12.15",
-  organization := "io.exle",
-  version := "0.1",
   resolvers ++= Seq(
-    Resolver.sonatypeRepo("public"),
-    Resolver.sonatypeRepo("snapshots"),
     NexusReleases,
     NexusSnapshots
-  ),
-  licenses := Seq("CC0" -> url("https://creativecommons.org/publicdomain/zero/1.0/legalcode")),
-  homepage := Some(url("https://github.com/Ergo-Lend/edge")),
-  description := "Ergo Development Generics",
+  ) ++ Resolver.sonatypeOssRepos("public")
+    ++ Resolver.sonatypeOssRepos("snapshots"),
   pomExtra :=
     <developers>
       <developer>
@@ -41,22 +38,31 @@ lazy val commonSettings = List(
         <name>Cheese Enthusiast</name>
       </developer>
     </developers>,
-  publishMavenStyle := true,
-  publishTo := sonatypePublishToBundle.value,
-  scmInfo := Some(
-    ScmInfo(
-      url("https://github.com/Ergo-Lend/edge"),
-      "scm:git@github.com:Ergo-Lend/edge.git"
-    )
-  ),
   libraryDependencies ++= Testing ++
     Enumeratum
 )
 
+versionScheme := Some("early-semver")
+publishMavenStyle := true
+publishTo := {
+  val nexus = "https://s01.oss.sonatype.org/"
+  if (isSnapshot.value) Some("snapshots" at nexus + "content/repositories/snapshots")
+  else Some("releases" at nexus + "service/local/staging/deploy/maven2")
+}
+ThisBuild / pomIncludeRepository := { _ => false }
+scmInfo := Some(
+  ScmInfo(
+    url("https://github.com/Ergo-Lend/edge"),
+    "scm:git@github.com:Ergo-Lend/edge.git"
+  )
+)
+
 // prefix version with "-SNAPSHOT" for builds without a git tag
-dynverSonatypeSnapshots in ThisBuild := true
+ThisBuild / dynverSonatypeSnapshots := false
 // use "-" instead of default "+"
-dynverSeparator in ThisBuild := "-"
+ThisBuild / dynverSeparator := "-"
+ThisBuild / sonatypeCredentialHost := "s01.oss.sonatype.org"
+ThisBuild / sonatypeRepository := "https://s01.oss.sonatype.org/service/local"
 
 lazy val root = project
   .in(file("."))
@@ -69,9 +75,5 @@ lazy val root = project
         HttpDep
   )
 
-ThisBuild / publishMavenStyle := true
-ThisBuild / licenses := List(
-  "Apache 2" -> new URL("http://www.apache.org/licenses/LICENSE-2.0.txt")
-)
 
 credentials += Credentials(Path.userHome / ".sbt" / "sonatype_credentials")

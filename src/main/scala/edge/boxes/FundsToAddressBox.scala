@@ -13,6 +13,7 @@ import org.ergoplatform.appkit.{
   OutBox,
   UnsignedTransactionBuilder
 }
+import registers.Register
 import utils.ContractUtils
 
 import scala.collection.JavaConverters.collectionAsScalaIterableConverter
@@ -22,7 +23,13 @@ case class FundsToAddressBox(
   value: Long = ErgCommons.MinBoxFee,
   override val id: ErgoId = ErgoId.create(""),
   override val tokens: Seq[ErgoToken] = Seq.empty,
-  override val box: Option[Box] = Option(null)
+  override val box: Option[Box] = Option(null),
+  override val R4: Option[Register[_]] = None,
+  override val R5: Option[Register[_]] = None,
+  override val R6: Option[Register[_]] = None,
+  override val R7: Option[Register[_]] = None,
+  override val R8: Option[Register[_]] = None,
+  override val R9: Option[Register[_]] = None
 ) extends BoxWrapper {
 
   def this(inputBox: InputBox) = this(
@@ -32,33 +39,6 @@ case class FundsToAddressBox(
     tokens = inputBox.getTokens.asScala.toSeq,
     box = Option(Box(inputBox))
   )
-
-  /**
-    * Get Outbox returns the immediate Outbox of the wrapper.
-    * This means it does not go through any modification
-    *
-    * @param ctx Blockchain Context
-    * @param txB TxBuilder
-    * @return
-    */
-  override def getOutBox(
-    ctx: BlockchainContext,
-    txB: UnsignedTransactionBuilder
-  ): OutBox =
-    if (tokens.isEmpty) {
-      txB
-        .outBoxBuilder()
-        .value(value)
-        .contract(getContract(ctx))
-        .build()
-    } else {
-      txB
-        .outBoxBuilder()
-        .value(value)
-        .tokens(tokens: _*)
-        .contract(getContract(ctx))
-        .build()
-    }
 
   override def getCustomOutBox(
     ctx: BlockchainContext,

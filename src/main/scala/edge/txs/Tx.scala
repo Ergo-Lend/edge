@@ -5,22 +5,36 @@ import errors.{ProveException, ReducedException}
 import boxes.CustomBoxData
 import org.bouncycastle.util.encoders.Hex
 import org.ergoplatform.P2PKAddress
-import org.ergoplatform.appkit.{Address, BlockchainContext, ErgoProver, ErgoToken, ErgoValue, InputBox, NetworkType, OutBox, ReducedTransaction, SignedTransaction, UnsignedTransaction, UnsignedTransactionBuilder}
+import org.ergoplatform.appkit.{
+  Address,
+  BlockchainContext,
+  ErgoProver,
+  ErgoToken,
+  ErgoValue,
+  InputBox,
+  NetworkType,
+  OutBox,
+  ReducedTransaction,
+  SignedTransaction,
+  UnsignedTransaction,
+  UnsignedTransactionBuilder
+}
 import scorex.crypto.hash.Blake2b256
 import special.collection.Coll
 
-import scala.collection.JavaConverters.{collectionAsScalaIterableConverter, seqAsJavaListConverter}
+import scala.collection.JavaConverters.{
+  collectionAsScalaIterableConverter,
+  seqAsJavaListConverter
+}
 
 trait Tx {
   val changeAddress: P2PKAddress
 
   var signedTx: Option[SignedTransaction] = None
   val inputBoxes: Seq[InputBox]
-  lazy val dataInputs: Seq[InputBox] = Seq.empty
-  lazy val tokensToBurn: Seq[ErgoToken] = Seq.empty
+  val dataInputs: Seq[InputBox] = Seq.empty
+  val tokensToBurn: Seq[ErgoToken] = Seq.empty
 
-  val dummyTxId: String =
-    "ce552663312afc2379a91f803c93e2b10b424f176fbc930055c10def2fd88a5d"
   implicit val ctx: BlockchainContext
 
   def getOutBoxes: Seq[OutBox]
@@ -34,7 +48,7 @@ trait Tx {
     }
 
   def getOutBoxesAsInputBoxesViaDummyTxId: Seq[InputBox] =
-    getOutBoxesAsInputBoxes(dummyTxId)
+    getOutBoxesAsInputBoxes(Tx.dummyTxId)
 
   private def inputStr(
     inputBox: InputBox,
@@ -219,4 +233,10 @@ trait Tx {
       case e: Throwable =>
         throw ReducedException(e.getMessage)
     }
+}
+
+object Tx {
+
+  val dummyTxId: String =
+    "ce552663312afc2379a91f803c93e2b10b424f176fbc930055c10def2fd88a5d"
 }

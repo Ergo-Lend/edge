@@ -110,10 +110,10 @@ abstract class Explorer(nodeInfo: NodeInfo) {
     }
 
   /**
-   * Get Box by Id, spent or unspent
-   * @param boxId
-   * @return
-   */
+    * Get Box by Id, spent or unspent
+    * @param boxId
+    * @return
+    */
   def getBoxById(boxId: String): Json =
     try {
       GetRequest.httpGet(s"$boxesP1/$boxId")

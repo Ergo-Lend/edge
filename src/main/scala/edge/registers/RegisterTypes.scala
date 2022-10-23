@@ -1,5 +1,6 @@
 package edge.registers
 
+import io.circe.Json
 import org.ergoplatform.{ErgoAddress, ErgoAddressEncoder}
 import org.ergoplatform.appkit.{Address, NetworkType}
 import registers.Register
@@ -8,7 +9,9 @@ import special.collection.Coll
 
 import java.nio.charset.StandardCharsets
 
-class NumbersRegister(override val value: Array[Long]) extends Register(value) {}
+class NumbersRegister(override val value: Array[Long]) extends Register(value)
+
+class LongRegister(override val value: Long) extends Register(value)
 
 class StringRegister(val str: String)
     extends Register(CollByte.stringToCollByte(str)) {
@@ -21,18 +24,45 @@ class StringRegister(val str: String)
   )
 }
 
-class CollStringRegister(val collStr: Array[String]) extends Register(
-  collStr
-) {
+class CollStringRegister(val collStr: Array[String])
+    extends Register(
+      collStr
+    ) {
   def this(arrayCollByte: Array[Coll[Byte]]) = this(
-    arrayCollByte.map(collByte => new String(collByte.toArray, StandardCharsets.UTF_8))
+    arrayCollByte.map(collByte =>
+      new String(collByte.toArray, StandardCharsets.UTF_8)
+    )
   )
 }
 
 object CollStringRegister {
-  def empty: CollStringRegister = {
+
+  def empty: CollStringRegister =
     new CollStringRegister(Array[String]())
-  }
+}
+
+class CollAddressRegister(val collAddress: Seq[Address])
+    extends Register(
+      collAddress.map(addr => addr.getErgoAddress.script.bytes).toArray
+    ) {
+
+  def toJson: Json =
+    Json.fromFields(
+      List(
+        (
+          "addresses",
+          Json.fromValues(
+            collAddress.map(address => Json.fromString(address.toString)).toList
+          )
+        )
+      )
+    )
+}
+
+object CollAddressRegister {
+
+  def empty: CollAddressRegister =
+    new CollAddressRegister(Seq.empty)
 }
 
 class CollByteRegister(override val value: Array[Byte])
@@ -47,8 +77,11 @@ class AddressRegister(val address: String)
       else address.getBytes
     ) {
 
-  def this(arrayByte: Array[Byte]) = this(
-    new String(arrayByte, StandardCharsets.UTF_8)
+  def this(
+    arrayByte: Array[Byte],
+    networkType: NetworkType = NetworkType.MAINNET
+  ) = this(
+    Address.fromPropositionBytes(networkType, arrayByte).toString
   )
 
   def this(address: Address) = this(
@@ -56,18 +89,24 @@ class AddressRegister(val address: String)
   )
 
   def getAddress: Address = Address.create(address)
+
   def isEmpty: Boolean =
     address.isEmpty
 }
 
 object AddressRegister {
 
-  def getAddress(addressBytes: Array[Byte])(implicit networkType: NetworkType): ErgoAddress = {
+  def getAddress(
+    addressBytes: Array[Byte]
+  )(implicit networkType: NetworkType): ErgoAddress = {
     val ergoTree =
       ErgoTreeSerializer.DefaultSerializer.deserializeErgoTree(addressBytes)
     val encoder = new ErgoAddressEncoder(networkType.networkPrefix)
     encoder.fromProposition(ergoTree).get
   }
+
+  def getEmpty(implicit networkType: NetworkType): AddressRegister =
+    new AddressRegister(Array.emptyByteArray, networkType)
 }
 
 object CollByte {

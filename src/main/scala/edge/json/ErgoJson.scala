@@ -96,11 +96,11 @@ object ErgoJson {
     if (registerJson.isEmpty) None
     else {
       getType match {
-        case CollByte     => getRegisterAsCollByte(registerJson)
-        case CollCollByte => getRegisterAsCollCollByte(registerJson)
-        case CollLong     => getRegisterAsCollLong(registerJson)
+        case CollByte        => getRegisterAsCollByte(registerJson)
+        case CollCollByte    => getRegisterAsCollCollByte(registerJson)
+        case CollLong        => getRegisterAsCollLong(registerJson)
         case PairIntCollByte => getRegisterAsPairIntCollByte(registerJson)
-        case _            => Option.empty
+        case _               => Option.empty
       }
     }
   }
@@ -120,8 +120,9 @@ object ErgoJson {
       )
     }
 
-  private def getRegisterAsPairIntCollByte(registerJson: Option[ciJson]): Option[(Int, Array[Byte])] =
-  {
+  private def getRegisterAsPairIntCollByte(
+    registerJson: Option[ciJson]
+  ): Option[(Int, Array[Byte])] =
     if (registerJson.isEmpty) {
       Option.empty
     } else {
@@ -141,7 +142,6 @@ object ErgoJson {
         )
       }
     }
-  }
 
   private def getRegisterAsCollCollByte(
     registerJson: Option[ciJson]

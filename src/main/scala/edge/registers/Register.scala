@@ -35,8 +35,16 @@ class Register[T](val value: T) extends IRegVal[T] {
       case cl: Coll[Long]   => ErgoType.collType(ErgoType.longType())
       case ararb: Array[Array[Byte]] =>
         ErgoType.collType(ErgoType.collType(ErgoType.byteType()))
-      case pis: (Int, String) => ErgoType.pairType(ErgoType.integerType(), ErgoType.collType(ErgoType.byteType()))
-      case pls: (Long, String) => ErgoType.pairType(ErgoType.longType(), ErgoType.collType(ErgoType.byteType()))
+      case pis: (Int, String) =>
+        ErgoType.pairType(
+          ErgoType.integerType(),
+          ErgoType.collType(ErgoType.byteType())
+        )
+      case pls: (Long, String) =>
+        ErgoType.pairType(
+          ErgoType.longType(),
+          ErgoType.collType(ErgoType.byteType())
+        )
       case _ =>
         RegisterTypeException("Could not determine ErgoType for given RegVal")
     }
