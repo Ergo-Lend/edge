@@ -9,8 +9,7 @@ import org.ergoplatform.{ErgoAddress, ErgoAddressEncoder}
 import org.ergoplatform.appkit.{
   Address,
   BlockchainContext,
-  InputBox,
-  NetworkType
+  InputBox
 }
 import play.api.Logger
 import play.api.libs.json.{JsResultException, JsValue, Json => playJson}

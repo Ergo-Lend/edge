@@ -71,6 +71,10 @@ class CollByteRegister(override val value: Array[Byte])
   def getString: String = new String(value, StandardCharsets.UTF_8)
 }
 
+/**
+ * Defaults to MAINNET
+ * @param address
+ */
 class AddressRegister(val address: String)
     extends Register(
       if (address.nonEmpty) Address.create(address).getErgoAddress.script.bytes
@@ -98,14 +102,14 @@ object AddressRegister {
 
   def getAddress(
     addressBytes: Array[Byte]
-  )(implicit networkType: NetworkType): ErgoAddress = {
+  )(implicit networkType: NetworkType = NetworkType.MAINNET): ErgoAddress = {
     val ergoTree =
       ErgoTreeSerializer.DefaultSerializer.deserializeErgoTree(addressBytes)
     val encoder = new ErgoAddressEncoder(networkType.networkPrefix)
     encoder.fromProposition(ergoTree).get
   }
 
-  def getEmpty(implicit networkType: NetworkType): AddressRegister =
+  def getEmpty(implicit networkType: NetworkType = NetworkType.MAINNET): AddressRegister =
     new AddressRegister(Array.emptyByteArray, networkType)
 }
 
