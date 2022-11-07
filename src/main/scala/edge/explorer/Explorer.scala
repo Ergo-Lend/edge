@@ -6,11 +6,7 @@ import io.circe.Json
 import io.circe.parser.parse
 import node.NodeInfo
 import org.ergoplatform.{ErgoAddress, ErgoAddressEncoder}
-import org.ergoplatform.appkit.{
-  Address,
-  BlockchainContext,
-  InputBox
-}
+import org.ergoplatform.appkit.{Address, BlockchainContext, InputBox}
 import play.api.Logger
 import play.api.libs.json.{JsResultException, JsValue, Json => playJson}
 import scalaj.http.{BaseHttp, HttpConstants}

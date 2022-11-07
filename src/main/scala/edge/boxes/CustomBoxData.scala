@@ -29,4 +29,17 @@ case class CustomBoxData(
       customTokens,
       customRegs
     )
+
+  def getBox(
+    ctx: BlockchainContext,
+    txB: UnsignedTransactionBuilder
+  ): OutBox =
+    WrappedBox().getCustomOutBox(
+      ctx,
+      txB,
+      customValue,
+      customContract,
+      customTokens,
+      customRegs
+    )
 }

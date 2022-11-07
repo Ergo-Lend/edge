@@ -2,7 +2,7 @@ package txs
 
 import commons.ErgCommons
 import errors.{ProveException, ReducedException}
-import boxes.CustomBoxData
+import boxes.{BoxWrapper, CustomBoxData, WrappedBox}
 import org.bouncycastle.util.encoders.Hex
 import org.ergoplatform.P2PKAddress
 import org.ergoplatform.appkit.{
@@ -29,17 +29,33 @@ import scala.collection.JavaConverters.{
 
 trait Tx {
   val changeAddress: P2PKAddress
+  implicit val ctx: BlockchainContext
 
   var signedTx: Option[SignedTransaction] = None
   val inputBoxes: Seq[InputBox]
   val dataInputs: Seq[InputBox] = Seq.empty
   val tokensToBurn: Seq[ErgoToken] = Seq.empty
+  val txB: UnsignedTransactionBuilder = ctx.newTxBuilder()
 
-  implicit val ctx: BlockchainContext
+  def defineOutBoxWrappers: Seq[BoxWrapper]
 
-  def getOutBoxes: Seq[OutBox]
+  def getOutBoxes: Seq[OutBox] =
+    defineOutBoxWrappers.map(boxWrapper => boxWrapper.getOutBox(ctx, txB))
 
-  def getCustomOutBoxes(customData: Seq[CustomBoxData]): Seq[OutBox] = Seq.empty
+  def getCustomOutBoxes(customData: Seq[CustomBoxData]): Seq[OutBox] = {
+    val outBoxWrappers: Seq[BoxWrapper] = defineOutBoxWrappers
+    val txB: UnsignedTransactionBuilder = ctx.newTxBuilder()
+    customData.zipWithIndex.map {
+      case (customBoxData, index) => {
+        // If the wrapper is present, we apply the data
+        if (outBoxWrappers.isDefinedAt(index)) {
+          customBoxData.applyData(ctx, txB, outBoxWrappers(index))
+        } else {
+          customBoxData.getBox(ctx, txB)
+        }
+      }
+    }
+  }
 
   def getOutBoxesAsInputBoxes(txId: String): Seq[InputBox] =
     // Increment number
@@ -178,9 +194,8 @@ trait Tx {
     }
   }
 
-  def buildTx: UnsignedTransaction = {
+  def buildWithOutboxes(outBoxes: Seq[OutBox]): UnsignedTransaction = {
     val txB: UnsignedTransactionBuilder = ctx.newTxBuilder()
-    val outBoxes: Seq[OutBox] = getOutBoxes
 
     val essentialsTxB: UnsignedTransactionBuilder =
       txB
@@ -208,12 +223,19 @@ trait Tx {
     txBWithTokenBurn.build
   }
 
-  def signTx: SignedTransaction =
+  def buildCustomTx(customData: Seq[CustomBoxData]): UnsignedTransaction =
+    buildWithOutboxes(getCustomOutBoxes(customData))
+
+  def buildTx: UnsignedTransaction = {
+    val outBoxes: Seq[OutBox] = getOutBoxes
+    buildWithOutboxes(outBoxes)
+  }
+
+  def sign(unsignedTx: UnsignedTransaction): SignedTransaction =
     try {
-      val unsignedTransaction: UnsignedTransaction = buildTx
       val prover: ErgoProver = ctx.newProverBuilder().build()
       val signedTxWithoutOption: SignedTransaction =
-        prover.sign(unsignedTransaction)
+        prover.sign(unsignedTx)
       signedTx = Option(signedTxWithoutOption)
 
       signedTx.get
@@ -226,13 +248,25 @@ trait Tx {
       }
     }
 
-  def reduceTx: ReducedTransaction =
+  def signCustomTx(customData: Seq[CustomBoxData]): SignedTransaction =
+    sign(buildCustomTx(customData))
+
+  def signTx: SignedTransaction =
+    sign(buildTx)
+
+  def reduce(unsignedTx: UnsignedTransaction): ReducedTransaction =
     try {
-      ctx.newProverBuilder().build().reduce(buildTx, 0)
+      ctx.newProverBuilder().build().reduce(unsignedTx, 0)
     } catch {
       case e: Throwable =>
         throw ReducedException(e.getMessage)
     }
+
+  def reduceTx: ReducedTransaction =
+    reduce(buildTx)
+
+  def reduceCustomTx(customData: Seq[CustomBoxData]): ReducedTransaction =
+    reduce(buildCustomTx(customData))
 }
 
 object Tx {

@@ -72,9 +72,9 @@ class CollByteRegister(override val value: Array[Byte])
 }
 
 /**
- * Defaults to MAINNET
- * @param address
- */
+  * Defaults to MAINNET
+  * @param address
+  */
 class AddressRegister(val address: String)
     extends Register(
       if (address.nonEmpty) Address.create(address).getErgoAddress.script.bytes
@@ -109,7 +109,9 @@ object AddressRegister {
     encoder.fromProposition(ergoTree).get
   }
 
-  def getEmpty(implicit networkType: NetworkType = NetworkType.MAINNET): AddressRegister =
+  def getEmpty(
+    implicit networkType: NetworkType = NetworkType.MAINNET
+  ): AddressRegister =
     new AddressRegister(Array.emptyByteArray, networkType)
 }
 

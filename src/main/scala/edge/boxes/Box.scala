@@ -173,3 +173,21 @@ trait BoxWrapperHelper {
     }
   }
 }
+
+case class WrappedBox(
+  tokens: Seq[ErgoToken] = Seq.empty,
+  value: Long = 0L,
+  contract: ErgoContract = Address.create("4MQyML64GnzMxZgm").toErgoContract,
+  id: ErgoId = ErgoId.create(""),
+  box: Option[Box] = None,
+  override val R4: Option[Register[_]] = None,
+  override val R5: Option[Register[_]] = None,
+  override val R6: Option[Register[_]] = None,
+  override val R7: Option[Register[_]] = None,
+  override val R8: Option[Register[_]] = None,
+  override val R9: Option[Register[_]] = None
+) extends BoxWrapper {
+
+  override def getContract(implicit ctx: BlockchainContext): ErgoContract =
+    contract
+}

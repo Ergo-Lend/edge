@@ -40,26 +40,6 @@ case class FundsToAddressBox(
     box = Option(Box(inputBox))
   )
 
-  override def getCustomOutBox(
-    ctx: BlockchainContext,
-    txB: UnsignedTransactionBuilder,
-    customValue: Option[Long] = None,
-    customContract: Option[ErgoContract] = None,
-    customTokens: Option[Seq[ErgoToken]] = None,
-    customRegs: Option[Seq[ErgoValue[_]]] = None
-  ): OutBox =
-    txB
-      .outBoxBuilder()
-      .value(customValue.getOrElse(value))
-      .contract(customContract.getOrElse(getContract(ctx)))
-      .tokens(customTokens.getOrElse(tokens): _*)
-      .registers(
-        customRegs.getOrElse(
-          Seq()
-        ): _*
-      )
-      .build()
-
   override def getContract(implicit ctx: BlockchainContext): ErgoContract =
     ContractUtils.sendToPK(address)
 }
