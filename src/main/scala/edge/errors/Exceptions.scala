@@ -81,3 +81,10 @@ final case class IncompatibleTokenException(
 ) extends Throwable(
       s"Incompatible Token: TargetToken -> $targetToken, TokenReceived -> $token"
     )
+
+final case class TokenDoesNotExistsInBoxException(
+  token: String,
+  private val message: String = "Token does not exists in Box"
+) extends Throwable(
+      s"Token does not exists in Box. Token Id: $token"
+    )

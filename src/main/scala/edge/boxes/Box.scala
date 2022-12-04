@@ -1,6 +1,7 @@
 package boxes
 
 import contracts.Contract
+import io.circe.Json
 import org.ergoplatform.appkit._
 import registers.Register
 import sigmastate.Values
@@ -45,6 +46,10 @@ object Box {
     */
   def ofOutBox(output: OutBox, txId: String, index: Int): Box =
     Box(output.convertToInputWith(txId, index.shortValue()))
+}
+
+abstract class BoxWrapperJson extends BoxWrapper {
+  def toJson(): Json
 }
 
 abstract class BoxWrapper extends IBoxRegister {

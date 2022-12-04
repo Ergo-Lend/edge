@@ -90,7 +90,7 @@ trait GenericTxProcessor extends TxProcessor {
               println(e.getMessage)
             case e: ErgoClientException =>
               println(e.getMessage)
-            case e: Throwable => throw new Throwable(e)
+            case e: Throwable => println(e.getMessage)
           }
 
           processTx(
@@ -159,6 +159,7 @@ trait SingletonDependentTxProcessor extends TxProcessor {
             getDataInputsBoxesForTx(boxForProcessing, singletonBox)
           )
 
+          // We want to eat up the message cause we dont care if it fails
           try {
             tx.signTx
             ctx.sendTransaction(tx.signedTx.get)
@@ -170,7 +171,7 @@ trait SingletonDependentTxProcessor extends TxProcessor {
               println(e.getMessage)
             case e: ErgoClientException =>
               println(e.getMessage)
-            case _: Throwable => throw new Throwable()
+            case e: Throwable => println(e.getMessage)
           }
 
           val outSingletonBox: BoxWrapper = getOutSingletonBox(tx, singletonBox)
