@@ -231,9 +231,17 @@ trait Tx {
     buildWithOutboxes(outBoxes)
   }
 
-  def sign(unsignedTx: UnsignedTransaction): SignedTransaction =
+  def sign(unsignedTx: UnsignedTransaction): SignedTransaction = {
+    val prover: ErgoProver = ctx.newProverBuilder().build()
+
+    signWithProver(prover, unsignedTx)
+  }
+
+  def signWithProver(
+    prover: ErgoProver,
+    unsignedTx: UnsignedTransaction
+  ): SignedTransaction =
     try {
-      val prover: ErgoProver = ctx.newProverBuilder().build()
       val signedTxWithoutOption: SignedTransaction =
         prover.sign(unsignedTx)
       signedTx = Option(signedTxWithoutOption)
@@ -253,6 +261,9 @@ trait Tx {
 
   def signTx: SignedTransaction =
     sign(buildTx)
+
+  def signTxWithProver(prover: ErgoProver): SignedTransaction =
+    signWithProver(prover, buildTx)
 
   def reduce(unsignedTx: UnsignedTransaction): ReducedTransaction =
     try {

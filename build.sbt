@@ -7,9 +7,11 @@ organization := """io.github.ergo-lend"""
 organizationName := "exle"
 organizationHomepage := Some(url("https://github.com/ergo-lend/edge"))
 scalaVersion := "2.12.15"
-version := "0.1.2-SNAPSHOT"
+version := "0.1.3-SNAPSHOT"
 description := "Ergo Development Generics"
-licenses := Seq("Apache 2" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt"))
+licenses := Seq(
+  "Apache 2" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt")
+)
 homepage := Some(url("https://github.com/Ergo-Lend/edge"))
 
 lazy val NexusReleases = "Sonatype Releases".at(
@@ -46,8 +48,9 @@ versionScheme := Some("early-semver")
 publishMavenStyle := true
 publishTo := {
   val nexus = "https://s01.oss.sonatype.org/"
-  if (isSnapshot.value) Some("snapshots" at nexus + "content/repositories/snapshots")
-  else Some("releases" at nexus + "service/local/staging/deploy/maven2")
+  if (isSnapshot.value)
+    Some("snapshots".at(nexus + "content/repositories/snapshots"))
+  else Some("releases".at(nexus + "service/local/staging/deploy/maven2"))
 }
 ThisBuild / pomIncludeRepository := { _ => false }
 scmInfo := Some(
@@ -74,6 +77,5 @@ lazy val root = project
         DependencyInjection ++
         HttpDep
   )
-
 
 credentials += Credentials(Path.userHome / ".sbt" / "sonatype_credentials")

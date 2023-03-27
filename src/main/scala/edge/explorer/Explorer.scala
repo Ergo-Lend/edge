@@ -1,12 +1,13 @@
 package explorer
 
 import commons.StackTrace
+import edge.boxes.TokenBox
 import errors.{ConnectionException, ExplorerException, ParseException}
 import io.circe.Json
 import io.circe.parser.parse
 import node.NodeInfo
 import org.ergoplatform.{ErgoAddress, ErgoAddressEncoder}
-import org.ergoplatform.appkit.{Address, BlockchainContext, InputBox}
+import org.ergoplatform.appkit.{Address, BlockchainContext, ErgoId, InputBox}
 import play.api.Logger
 import play.api.libs.json.{JsResultException, JsValue, Json => playJson}
 import scalaj.http.{BaseHttp, HttpConstants}
@@ -280,6 +281,32 @@ abstract class Explorer(nodeInfo: NodeInfo) {
       case e: JsResultException => throw e
       case e: Throwable =>
         logger.error(StackTrace.getStackTraceStr(e))
+        throw e
+    }
+
+  /**
+    * Gets the initial information of the token when it's first created.
+    * Returns a TokenBox which have all the token information
+    * @param tokenId
+    * @return
+    */
+  def getTokenBox(tokenId: ErgoId): TokenBox =
+    try {
+      val boxJson: Json = getBoxById(tokenId.toString)
+      val txId: String =
+        boxJson.hcursor.downField("spentTransactionId").as[String].getOrElse("")
+      val tx: Json = getConfirmedTx(txId)
+      val outputs: Array[Json] =
+        tx.hcursor.downField("outputs").as[Array[Json]].getOrElse(null)
+      val nftJson: Json = outputs.head
+      val tokenBox: TokenBox = TokenBox.from(nftJson)
+      tokenBox
+    } catch {
+      case e: ParseException => {
+        throw ParseException(e.getMessage)
+      }
+      case e: JsResultException => throw e
+      case e: Throwable =>
         throw e
     }
 }

@@ -1,17 +1,15 @@
 package boxes
 
 import commons.ErgCommons
+import json.Register
 import org.ergoplatform.appkit.{
   Address,
   BlockchainContext,
   ErgoContract,
   ErgoId,
   ErgoToken,
-  ErgoValue,
   InputBox,
-  NetworkType,
-  OutBox,
-  UnsignedTransactionBuilder
+  NetworkType
 }
 import registers.Register
 import utils.ContractUtils
@@ -42,4 +40,19 @@ case class FundsToAddressBox(
 
   override def getContract(implicit ctx: BlockchainContext): ErgoContract =
     ContractUtils.sendToPK(address)
+}
+
+object FundsToAddressBox {
+
+  def from(
+    inputBox: InputBox,
+    networkType: NetworkType = NetworkType.MAINNET
+  ): FundsToAddressBox =
+    FundsToAddressBox.apply(
+      address = Address.fromErgoTree(inputBox.getErgoTree, networkType),
+      value = inputBox.getValue,
+      id = inputBox.getId,
+      tokens = inputBox.getTokens.asScala.toSeq,
+      box = Option(Box(inputBox))
+    )
 }
