@@ -1,16 +1,9 @@
 package boxes
 
 import commons.ErgCommons
+import io.circe.Json
 import json.Register
-import org.ergoplatform.appkit.{
-  Address,
-  BlockchainContext,
-  ErgoContract,
-  ErgoId,
-  ErgoToken,
-  InputBox,
-  NetworkType
-}
+import org.ergoplatform.appkit.{Address, BlockchainContext, ErgoContract, ErgoId, ErgoToken, InputBox, NetworkType}
 import registers.Register
 import utils.ContractUtils
 
@@ -28,7 +21,7 @@ case class FundsToAddressBox(
   override val R7: Option[Register[_]] = None,
   override val R8: Option[Register[_]] = None,
   override val R9: Option[Register[_]] = None
-) extends BoxWrapper {
+) extends BoxWrapperJson {
 
   def this(inputBox: InputBox) = this(
     address = Address.fromErgoTree(inputBox.getErgoTree, NetworkType.MAINNET),
@@ -40,6 +33,15 @@ case class FundsToAddressBox(
 
   override def getContract(implicit ctx: BlockchainContext): ErgoContract =
     ContractUtils.sendToPK(address)
+
+  override def toJson(): Json =
+    Json.fromFields(
+      List(
+        ("boxId", Json.fromString(this.id.toString)),
+        ("value", Json.fromLong(value)),
+        ("address", Json.fromString(address.toString))
+      )
+    )
 }
 
 object FundsToAddressBox {

@@ -1,34 +1,18 @@
 package txs
 
-import commons.ErgCommons
+import commons.{ErgCommons, StackTrace}
 import errors.{ProveException, ReducedException}
 import boxes.{BoxWrapper, CustomBoxData, WrappedBox}
 import org.bouncycastle.util.encoders.Hex
 import org.ergoplatform.P2PKAddress
-import org.ergoplatform.appkit.{
-  Address,
-  BlockchainContext,
-  ErgoProver,
-  ErgoToken,
-  ErgoValue,
-  InputBox,
-  NetworkType,
-  OutBox,
-  ReducedTransaction,
-  SignedTransaction,
-  UnsignedTransaction,
-  UnsignedTransactionBuilder
-}
+import org.ergoplatform.appkit.{Address, BlockchainContext, ErgoProver, ErgoToken, ErgoValue, InputBox, NetworkType, OutBox, ReducedTransaction, SignedTransaction, UnsignedTransaction, UnsignedTransactionBuilder}
 import scorex.crypto.hash.Blake2b256
 import special.collection.Coll
 
-import scala.collection.JavaConverters.{
-  collectionAsScalaIterableConverter,
-  seqAsJavaListConverter
-}
+import scala.collection.JavaConverters.{collectionAsScalaIterableConverter, seqAsJavaListConverter}
 
 trait Tx {
-  val changeAddress: P2PKAddress
+  val changeAddress: Address
   implicit val ctx: BlockchainContext
 
   var signedTx: Option[SignedTransaction] = None
@@ -57,14 +41,14 @@ trait Tx {
     }
   }
 
-  def getOutBoxesAsInputBoxes(txId: String): Seq[InputBox] =
+  def getOutBoxesAsInputBoxes(txId: String, outBoxes: Seq[OutBox] = getOutBoxes): Seq[InputBox] =
     // Increment number
-    getOutBoxes.zipWithIndex.map {
+    outBoxes.zipWithIndex.map {
       case (box, count) => box.convertToInputWith(txId, count.toShort)
     }
 
-  def getOutBoxesAsInputBoxesViaDummyTxId: Seq[InputBox] =
-    getOutBoxesAsInputBoxes(Tx.dummyTxId)
+  def getOutBoxesAsInputBoxesViaDummyTxId(outBoxes: Seq[OutBox]): Seq[InputBox] =
+    getOutBoxesAsInputBoxes(Tx.dummyTxId, outBoxes = outBoxes)
 
   private def inputStr(
     inputBox: InputBox,
@@ -162,14 +146,22 @@ trait Tx {
     * Helps visualize an un-signed transaction to help with errors that occur during signing
     */
   def visualizeTx: String = {
+    visualizeTxWithBoxes()
+  }
+
+  def visualizeTxWithBoxes(
+                            inputBoxes: Seq[InputBox] = inputBoxes,
+                            outBoxes: Seq[OutBox] = getOutBoxes,
+                            dataInputs: Seq[InputBox] = dataInputs,
+                          ): String = {
     val vHead: String = "UNSIGNED TX:" + txInfoStr + "\n"
 
     val withInputs: String =
       inputBoxes.zipWithIndex.foldLeft(vHead + "INPUTS:") { (z, s) =>
         z + (inputStr(s._1, s._2) + "\n")
       }
-    val outBoxesAsInputBoxes: Seq[InputBox] =
-      getOutBoxesAsInputBoxesViaDummyTxId
+
+    val outBoxesAsInputBoxes: Seq[InputBox] = getOutBoxesAsInputBoxesViaDummyTxId(outBoxes)
 
     if (dataInputs.nonEmpty) {
       val withDataInputs: String =
@@ -199,8 +191,8 @@ trait Tx {
 
     val essentialsTxB: UnsignedTransactionBuilder =
       txB
-        .boxesToSpend(inputBoxes.asJava)
-        .outputs(outBoxes: _*)
+        .addInputs(inputBoxes: _*)
+        .addOutputs(outBoxes: _*)
         .fee(ErgCommons.MinMinerFee)
         .sendChangeTo(changeAddress)
 
@@ -209,7 +201,7 @@ trait Tx {
         essentialsTxB
       case _ =>
         essentialsTxB
-          .withDataInputs(dataInputs.asJava)
+          .addDataInputs(dataInputs: _*)
     }
 
     val txBWithTokenBurn: UnsignedTransactionBuilder = tokensToBurn match {
