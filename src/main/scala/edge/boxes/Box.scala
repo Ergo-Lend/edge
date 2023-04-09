@@ -57,6 +57,7 @@ abstract class BoxWrapper extends IBoxRegister {
   val box: Option[Box]
   val tokens: Seq[ErgoToken]
   val value: Long
+  val tokenToMint: Eip4Token = null
 
   /**
     * Get Outbox returns the immediate Outbox of the wrapper.
@@ -81,15 +82,22 @@ abstract class BoxWrapper extends IBoxRegister {
       else
         outBoxBuilder
 
+    val builderMintToken: OutBoxBuilder =
+      if (tokenToMint != null) {
+        builderAddTokens.mintToken(tokenToMint)
+      } else {
+        builderAddTokens
+      }
+
     // Add Registers
     val registersAsErgoValue: Seq[ErgoValue[_]] =
       this.getRegistersAsErgoValue
 
     val builderAddRegister: OutBoxBuilder =
       if (registersAsErgoValue.nonEmpty)
-        builderAddTokens.registers(registersAsErgoValue: _*)
+        builderMintToken.registers(registersAsErgoValue: _*)
       else
-        builderAddTokens
+        builderMintToken
 
     builderAddRegister.build()
   }
@@ -101,7 +109,8 @@ abstract class BoxWrapper extends IBoxRegister {
     customValue: Option[Long] = None,
     customContract: Option[ErgoContract] = None,
     customTokens: Option[Seq[ErgoToken]] = None,
-    customRegs: Option[Seq[ErgoValue[_]]] = None
+    customRegs: Option[Seq[ErgoValue[_]]] = None,
+    customTokenMint: Option[Eip4Token] = None
   ): OutBox = {
     val outBoxBuilder: OutBoxBuilder = txB
       .outBoxBuilder()
@@ -116,20 +125,30 @@ abstract class BoxWrapper extends IBoxRegister {
       else
         outBoxBuilder
 
+    val builderMintTokens: OutBoxBuilder =
+      if (customTokenMint.nonEmpty)
+        builderAddTokens
+          .mintToken(customTokenMint.get)
+      else if (tokenToMint != null)
+        builderAddTokens
+          .mintToken(tokenToMint)
+      else
+        builderAddTokens
+
     // Add Registers
     val registersAsErgoValue: Seq[ErgoValue[_]] =
       this.getRegistersAsErgoValue
 
     val builderAddRegister: OutBoxBuilder =
       if (customRegs.nonEmpty || registersAsErgoValue.nonEmpty)
-        builderAddTokens
+        builderMintTokens
           .registers(
             customRegs.getOrElse(
               registersAsErgoValue
             ): _*
           )
       else
-        builderAddTokens
+        builderMintTokens
 
     builderAddRegister.build()
   }

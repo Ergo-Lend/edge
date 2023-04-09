@@ -9,6 +9,15 @@ import special.collection.Coll
 object ErgoJson {
   import RegisterType._
 
+  def getBoxIds(json: ciJson): Seq[String] = {
+    val itemList: List[ciJson] = json.hcursor
+      .downField("items")
+      .as[List[ciJson]]
+      .getOrElse(throw ParseException())
+
+    itemList.map(json => json.hcursor.downField("boxId").as[String].getOrElse("")).toSeq
+  }
+
   def getBoxId(json: ciJson): String =
     json.hcursor
       .downField("items")

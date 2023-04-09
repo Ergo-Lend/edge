@@ -7,6 +7,8 @@ import org.bouncycastle.util.encoders.Hex
 import org.ergoplatform.P2PKAddress
 import org.ergoplatform.appkit.{Address, BlockchainContext, ErgoProver, ErgoToken, ErgoValue, InputBox, NetworkType, OutBox, ReducedTransaction, SignedTransaction, UnsignedTransaction, UnsignedTransactionBuilder}
 import scorex.crypto.hash.Blake2b256
+import sigmastate.interpreter.Interpreter
+import sigmastate.lang.exceptions.InterpreterException
 import special.collection.Coll
 
 import scala.collection.JavaConverters.{collectionAsScalaIterableConverter, seqAsJavaListConverter}
@@ -241,7 +243,19 @@ trait Tx {
       signedTx.get
     } catch {
       case e: Throwable => {
-        throw ProveException(e.getMessage)
+        if (e.getMessage.contains("Script reduced to false"))
+        {
+          throw ProveException(e.getMessage)
+        } else {
+          throw new Throwable(e.getMessage)
+        }
+      }
+      case e: InterpreterException => {
+        if (e.getMessage.contains("Script reduced to false")){
+          throw ProveException(e.getMessage)
+        } else {
+          throw e
+        }
       }
       case _: Throwable => {
         throw new Throwable()
@@ -250,6 +264,9 @@ trait Tx {
 
   def signCustomTx(customData: Seq[CustomBoxData]): SignedTransaction =
     sign(buildCustomTx(customData))
+
+  def signCustomTxWithProver(prover: ErgoProver, customData: Seq[CustomBoxData]): SignedTransaction =
+    signWithProver(prover, buildCustomTx(customData))
 
   def signTx: SignedTransaction =
     sign(buildTx)
