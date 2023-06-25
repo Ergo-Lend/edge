@@ -5,13 +5,29 @@ import errors.{ProveException, ReducedException}
 import boxes.{BoxWrapper, CustomBoxData, WrappedBox}
 import org.bouncycastle.util.encoders.Hex
 import org.ergoplatform.P2PKAddress
-import org.ergoplatform.appkit.{Address, BlockchainContext, ErgoProver, ErgoToken, ErgoValue, InputBox, NetworkType, OutBox, ReducedTransaction, SignedTransaction, UnsignedTransaction, UnsignedTransactionBuilder}
+import org.ergoplatform.appkit.{
+  Address,
+  BlockchainContext,
+  ErgoProver,
+  ErgoToken,
+  ErgoValue,
+  InputBox,
+  NetworkType,
+  OutBox,
+  ReducedTransaction,
+  SignedTransaction,
+  UnsignedTransaction,
+  UnsignedTransactionBuilder
+}
 import scorex.crypto.hash.Blake2b256
 import sigmastate.interpreter.Interpreter
 import sigmastate.lang.exceptions.InterpreterException
 import special.collection.Coll
 
-import scala.collection.JavaConverters.{collectionAsScalaIterableConverter, seqAsJavaListConverter}
+import scala.collection.JavaConverters.{
+  collectionAsScalaIterableConverter,
+  seqAsJavaListConverter
+}
 
 trait Tx {
   val changeAddress: Address
@@ -43,13 +59,18 @@ trait Tx {
     }
   }
 
-  def getOutBoxesAsInputBoxes(txId: String, outBoxes: Seq[OutBox] = getOutBoxes): Seq[InputBox] =
+  def getOutBoxesAsInputBoxes(
+    txId: String,
+    outBoxes: Seq[OutBox] = getOutBoxes
+  ): Seq[InputBox] =
     // Increment number
     outBoxes.zipWithIndex.map {
       case (box, count) => box.convertToInputWith(txId, count.toShort)
     }
 
-  def getOutBoxesAsInputBoxesViaDummyTxId(outBoxes: Seq[OutBox]): Seq[InputBox] =
+  def getOutBoxesAsInputBoxesViaDummyTxId(
+    outBoxes: Seq[OutBox]
+  ): Seq[InputBox] =
     getOutBoxesAsInputBoxes(Tx.dummyTxId, outBoxes = outBoxes)
 
   private def inputStr(
@@ -147,15 +168,14 @@ trait Tx {
   /**
     * Helps visualize an un-signed transaction to help with errors that occur during signing
     */
-  def visualizeTx: String = {
+  def visualizeTx: String =
     visualizeTxWithBoxes()
-  }
 
   def visualizeTxWithBoxes(
-                            inputBoxes: Seq[InputBox] = inputBoxes,
-                            outBoxes: Seq[OutBox] = getOutBoxes,
-                            dataInputs: Seq[InputBox] = dataInputs,
-                          ): String = {
+    inputBoxes: Seq[InputBox] = inputBoxes,
+    outBoxes: Seq[OutBox] = getOutBoxes,
+    dataInputs: Seq[InputBox] = dataInputs
+  ): String = {
     val vHead: String = "UNSIGNED TX:" + txInfoStr + "\n"
 
     val withInputs: String =
@@ -163,7 +183,8 @@ trait Tx {
         z + (inputStr(s._1, s._2) + "\n")
       }
 
-    val outBoxesAsInputBoxes: Seq[InputBox] = getOutBoxesAsInputBoxesViaDummyTxId(outBoxes)
+    val outBoxesAsInputBoxes: Seq[InputBox] =
+      getOutBoxesAsInputBoxesViaDummyTxId(outBoxes)
 
     if (dataInputs.nonEmpty) {
       val withDataInputs: String =
@@ -243,15 +264,14 @@ trait Tx {
       signedTx.get
     } catch {
       case e: Throwable => {
-        if (e.getMessage.contains("Script reduced to false"))
-        {
+        if (e.getMessage.contains("Script reduced to false")) {
           throw ProveException(e.getMessage)
         } else {
           throw new Throwable(e.getMessage)
         }
       }
       case e: InterpreterException => {
-        if (e.getMessage.contains("Script reduced to false")){
+        if (e.getMessage.contains("Script reduced to false")) {
           throw ProveException(e.getMessage)
         } else {
           throw e
@@ -265,7 +285,10 @@ trait Tx {
   def signCustomTx(customData: Seq[CustomBoxData]): SignedTransaction =
     sign(buildCustomTx(customData))
 
-  def signCustomTxWithProver(prover: ErgoProver, customData: Seq[CustomBoxData]): SignedTransaction =
+  def signCustomTxWithProver(
+    prover: ErgoProver,
+    customData: Seq[CustomBoxData]
+  ): SignedTransaction =
     signWithProver(prover, buildCustomTx(customData))
 
   def signTx: SignedTransaction =

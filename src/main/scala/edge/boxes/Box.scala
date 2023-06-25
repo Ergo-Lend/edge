@@ -1,11 +1,13 @@
 package boxes
 
+import commons.ErgCommons
 import contracts.Contract
 import io.circe.Json
 import org.ergoplatform.appkit._
 import registers.Register
 import sigmastate.Values
 import special.collection.Coll
+import txs.Tx
 
 import scala.collection.JavaConverters.collectionAsScalaIterableConverter
 
@@ -58,6 +60,18 @@ abstract class BoxWrapper extends IBoxRegister {
   val tokens: Seq[ErgoToken]
   val value: Long
   val tokenToMint: Eip4Token = null
+
+  def getOutBoxCost(
+    ctx: BlockchainContext,
+    txB: UnsignedTransactionBuilder
+  ): Long = {
+    val outBoxAsInputBox: InputBox =
+      getOutBox(ctx, txB).convertToInputWith(Tx.dummyTxId, 0)
+    val cost: Long =
+      outBoxAsInputBox.getBytes.length * ErgCommons.minValuePerByte
+
+    if (cost < ErgCommons.MinBoxFee) ErgCommons.MinBoxFee else cost
+  }
 
   /**
     * Get Outbox returns the immediate Outbox of the wrapper.

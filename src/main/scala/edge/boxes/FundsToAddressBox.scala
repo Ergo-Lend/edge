@@ -3,7 +3,15 @@ package boxes
 import commons.ErgCommons
 import io.circe.Json
 import json.Register
-import org.ergoplatform.appkit.{Address, BlockchainContext, ErgoContract, ErgoId, ErgoToken, InputBox, NetworkType}
+import org.ergoplatform.appkit.{
+  Address,
+  BlockchainContext,
+  ErgoContract,
+  ErgoId,
+  ErgoToken,
+  InputBox,
+  NetworkType
+}
 import registers.Register
 import utils.ContractUtils
 

@@ -15,7 +15,9 @@ object ErgoJson {
       .as[List[ciJson]]
       .getOrElse(throw ParseException())
 
-    itemList.map(json => json.hcursor.downField("boxId").as[String].getOrElse("")).toSeq
+    itemList
+      .map(json => json.hcursor.downField("boxId").as[String].getOrElse(""))
+      .toSeq
   }
 
   def getBoxId(json: ciJson): String =
