@@ -1,6 +1,7 @@
 package edge.EIP12Elements
 
-import org.ergoplatform.appkit.{ErgoToken, ErgoValue, OutBox}
+import org.ergoplatform.appkit.{ErgoValue, OutBox}
+import org.ergoplatform.sdk.ErgoToken
 import play.api.libs.json._
 
 import scala.collection.JavaConverters._

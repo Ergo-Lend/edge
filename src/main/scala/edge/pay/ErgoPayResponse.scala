@@ -1,6 +1,6 @@
 package edge.pay
 
-import commons.ErgCommons.nanoErgsToErgs
+import edge.commons.ErgCommons.nanoErgsToErgs
 import edge.pay.Severity.Severity
 import io.circe.generic.codec.DerivedAsObjectCodec.deriveCodec
 import io.circe.syntax._

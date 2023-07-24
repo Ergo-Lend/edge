@@ -2,8 +2,8 @@ package edge.boxes
 
 import edge.registers.{CollByteRegister, StringRegister}
 import io.circe.Json
-import json.{ErgoJson, Register, RegisterType}
-import org.ergoplatform.appkit.ErgoId
+import edge.json.{ErgoJson, Register, RegisterType}
+import org.ergoplatform.sdk.ErgoId
 
 case class TokenBox(
   tokenId: ErgoId,

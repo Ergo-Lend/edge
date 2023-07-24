@@ -1,14 +1,13 @@
-import boxes.Box
 import common.ErgoTestBase
+import edge.boxes.Box
 import org.ergoplatform.appkit.{
   ConstantsBuilder,
   ErgoContract,
-  ErgoId,
-  ErgoToken,
   ErgoValue,
   InputBox,
   UnsignedTransactionBuilder
 }
+import org.ergoplatform.sdk.{ErgoId, ErgoToken}
 import special.collection.Coll
 
 import java.math.BigInteger

@@ -1,19 +1,18 @@
-package boxes
+package edge.boxes
 
-import commons.ErgCommons
+import edge.commons.ErgCommons
 import io.circe.Json
-import json.Register
+import edge.json.Register
 import org.ergoplatform.appkit.{
   Address,
   BlockchainContext,
   ErgoContract,
-  ErgoId,
-  ErgoToken,
   InputBox,
   NetworkType
 }
-import registers.Register
-import utils.ContractUtils
+import edge.registers.Register
+import edge.utils.ContractUtils
+import org.ergoplatform.sdk.{ErgoId, ErgoToken}
 
 import scala.collection.JavaConverters.collectionAsScalaIterableConverter
 

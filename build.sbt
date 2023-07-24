@@ -6,8 +6,8 @@ name := """edge"""
 organization := """io.github.ergo-lend"""
 organizationName := "exle"
 organizationHomepage := Some(url("https://github.com/ergo-lend/edge"))
-scalaVersion := "2.12.15"
-version := "0.1.5-SNAPSHOT"
+scalaVersion := "2.13.9"
+version := "0.1.7-SNAPSHOT"
 description := "Ergo Development Generics"
 licenses := Seq(
   "Apache 2" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt")
@@ -40,8 +40,7 @@ lazy val commonSettings = List(
         <name>Cheese Enthusiast</name>
       </developer>
     </developers>,
-  libraryDependencies ++= Testing ++
-    Enumeratum
+  libraryDependencies ++= Testing
 )
 
 versionScheme := Some("early-semver")
@@ -79,3 +78,5 @@ lazy val root = project
   )
 
 credentials += Credentials(Path.userHome / ".sbt" / "sonatype_credentials")
+
+Compile / packageDoc / publishArtifact := false

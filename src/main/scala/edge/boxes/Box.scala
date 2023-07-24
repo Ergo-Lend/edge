@@ -1,13 +1,14 @@
-package boxes
+package edge.boxes
 
-import commons.ErgCommons
-import contracts.Contract
+import edge.commons.ErgCommons
+import edge.contracts.Contract
 import io.circe.Json
 import org.ergoplatform.appkit._
-import registers.Register
+import edge.registers.Register
 import sigmastate.Values
 import special.collection.Coll
-import txs.Tx
+import edge.txs.Tx
+import org.ergoplatform.sdk.{ErgoId, ErgoToken}
 
 import scala.collection.JavaConverters.collectionAsScalaIterableConverter
 
@@ -34,7 +35,7 @@ case class Box(input: InputBox) {
     Contract.fromErgoTree(input.getErgoTree)
 
   def getErgValue: Double =
-    (BigDecimal(value) / Parameters.OneErg).doubleValue()
+    (BigDecimal(value) / Parameters.OneErg).doubleValue
 }
 
 object Box {

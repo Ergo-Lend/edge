@@ -1,4 +1,4 @@
-package registers
+package edge.registers
 
 class RegisterTypeException(msg: String) extends RuntimeException(msg)
 

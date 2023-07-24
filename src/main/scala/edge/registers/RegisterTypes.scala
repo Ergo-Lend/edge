@@ -3,13 +3,24 @@ package edge.registers
 import io.circe.Json
 import org.ergoplatform.{ErgoAddress, ErgoAddressEncoder}
 import org.ergoplatform.appkit.{Address, NetworkType}
-import registers.Register
 import sigmastate.serialization.ErgoTreeSerializer
 import special.collection.Coll
 
 import java.nio.charset.StandardCharsets
 
 class NumbersRegister(override val value: Array[Long]) extends Register(value)
+
+class CollBytePairRegister(override val value: (Array[Byte], Array[Byte]))
+    extends Register(value) {
+
+  def getString: (String, String) =
+    (
+      new String(value._1, StandardCharsets.UTF_8),
+      new String(value._2, StandardCharsets.UTF_8)
+    )
+}
+
+class LongPairRegister(override val value: (Long, Long)) extends Register(value)
 
 class LongRegister(override val value: Long) extends Register(value)
 

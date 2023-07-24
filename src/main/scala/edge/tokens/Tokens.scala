@@ -1,7 +1,7 @@
-package tokens
+package edge.tokens
 
-import config.ConfigHelper
-import org.ergoplatform.appkit.{ErgoId, ErgoToken}
+import edge.config.ConfigHelper
+import org.ergoplatform.sdk.{ErgoId, ErgoToken}
 
 trait Token {
   val id: String

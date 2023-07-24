@@ -1,12 +1,13 @@
 package common
 
-import commons.ErgCommons
-import node.{BaseClient, DefaultNodeInfo}
+import edge.commons.ErgCommons
+import edge.node.{BaseClient, DefaultNodeInfo}
+import edge.tokens.Tokens
 import org.ergoplatform.appkit._
 import org.ergoplatform.appkit.impl.ErgoTreeContract
+import org.ergoplatform.sdk.ErgoToken
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
-import tokens.Tokens
 
 abstract class UnitSpec extends AnyWordSpec with Matchers {}
 

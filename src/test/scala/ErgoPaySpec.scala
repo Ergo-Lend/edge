@@ -1,5 +1,5 @@
 import common.ErgoTestBase
-import config.MainNetNodeConfig
+import edge.config.MainNetNodeConfig
 import edge.pay.{ErgoPayResponse, ErgoPayUtils, Severity}
 import edge.pay.ErgoPayUtils.getReducedSendTx
 import edge.pay.Severity.Severity

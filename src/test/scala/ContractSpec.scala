@@ -1,5 +1,5 @@
 import common.ErgoTestBase
-import contracts.Contract
+import edge.contracts.Contract
 import org.ergoplatform.appkit.{
   BlockchainContext,
   Constants,

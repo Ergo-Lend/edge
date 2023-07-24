@@ -1,6 +1,6 @@
 package edge.EIP12Elements
 
-import org.ergoplatform.appkit.ErgoId
+import org.ergoplatform.sdk.ErgoId
 import play.api.libs.json._
 
 case class EIP12DataInput(boxId: EIP12BoxId) {

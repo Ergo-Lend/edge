@@ -1,15 +1,13 @@
-package txs
+package edge.txs
 
-import commons.{ErgCommons, StackTrace}
-import errors.{ProveException, ReducedException}
-import boxes.{BoxWrapper, CustomBoxData, WrappedBox}
+import edge.commons.ErgCommons
+import edge.errors.{ProveException, ReducedException}
+import edge.boxes.{BoxWrapper, CustomBoxData}
 import org.bouncycastle.util.encoders.Hex
-import org.ergoplatform.P2PKAddress
 import org.ergoplatform.appkit.{
   Address,
   BlockchainContext,
   ErgoProver,
-  ErgoToken,
   ErgoValue,
   InputBox,
   NetworkType,
@@ -19,17 +17,14 @@ import org.ergoplatform.appkit.{
   UnsignedTransaction,
   UnsignedTransactionBuilder
 }
+import org.ergoplatform.sdk.ErgoToken
 import scorex.crypto.hash.Blake2b256
-import sigmastate.interpreter.Interpreter
-import sigmastate.lang.exceptions.InterpreterException
+import sigmastate.exceptions.InterpreterException
 import special.collection.Coll
 
-import scala.collection.JavaConverters.{
-  collectionAsScalaIterableConverter,
-  seqAsJavaListConverter
-}
+import scala.collection.JavaConverters.collectionAsScalaIterableConverter
 
-trait Tx {
+trait TTx {
   val changeAddress: Address
   implicit val ctx: BlockchainContext
 
@@ -316,4 +311,13 @@ object Tx {
 
   val dummyTxId: String =
     "ce552663312afc2379a91f803c93e2b10b424f176fbc930055c10def2fd88a5d"
+}
+
+case class Tx(
+  override val inputBoxes: Seq[InputBox],
+  outBoxes: Seq[BoxWrapper],
+  override val changeAddress: Address
+)(implicit val ctx: BlockchainContext)
+    extends TTx {
+  override def defineOutBoxWrappers: Seq[BoxWrapper] = outBoxes
 }

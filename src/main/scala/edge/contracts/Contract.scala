@@ -1,4 +1,4 @@
-package contracts
+package edge.contracts
 
 import org.ergoplatform.appkit._
 import scorex.crypto.hash.Digest32

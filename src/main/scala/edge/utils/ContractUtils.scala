@@ -1,4 +1,4 @@
-package utils
+package edge.utils
 
 import org.ergoplatform.appkit.impl.ErgoTreeContract
 import org.ergoplatform.appkit.{Address, ErgoContract, NetworkType}

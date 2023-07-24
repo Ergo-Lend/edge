@@ -1,6 +1,6 @@
-package node
+package edge.node
 
-import config.{MainNetNodeConfig, TestNetNodeConfig}
+import edge.config.{MainNetNodeConfig, TestNetNodeConfig}
 import org.ergoplatform.appkit.NetworkType
 
 class NodeExplorerUrlInfo(nodeUrl: String, explorerUrl: String)

@@ -1,4 +1,4 @@
-package errors
+package edge.errors
 
 import play.api.Logger
 import play.api.mvc.Result

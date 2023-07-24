@@ -1,9 +1,9 @@
-package txs
+package edge.txs
 
-import boxes.BoxWrapper
-import errors.ProveException
-import explorer.Explorer
-import node.BaseClient
+import edge.boxes.BoxWrapper
+import edge.errors.ProveException
+import edge.explorer.Explorer
+import edge.node.BaseClient
 import org.ergoplatform.appkit.{
   Address,
   BlockchainContext,

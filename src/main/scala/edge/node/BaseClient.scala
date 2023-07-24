@@ -1,7 +1,7 @@
-package node
+package edge.node
 
-import commons.ErgCommons
-import errors.ConnectionException
+import edge.commons.ErgCommons
+import edge.errors.ConnectionException
 import org.ergoplatform.appkit.BoxOperations.ExplorerApiUnspentLoader
 import org.ergoplatform.appkit.{
   Address,
@@ -9,11 +9,10 @@ import org.ergoplatform.appkit.{
   BoxOperations,
   CoveringBoxes,
   ErgoClient,
-  ErgoToken,
   InputBox,
-  NetworkType,
   RestApiErgoClient
 }
+import org.ergoplatform.sdk.ErgoToken
 import play.api.Logger
 
 import scala.collection.JavaConverters._
@@ -43,6 +42,7 @@ class BaseClient(nodeInfo: NodeInfo) {
     } catch {
       case e: Throwable =>
         logger.error(message = s"Could not set client! ${e.getMessage}.")
+        throw ConnectionException(e.getMessage)
     }
   }
 
@@ -59,7 +59,7 @@ class BaseClient(nodeInfo: NodeInfo) {
     try {
       client.execute(ctx => ctx.getHeight.toLong)
     } catch {
-      case _: Throwable => throw ConnectionException()
+      case e: Throwable => throw ConnectionException(e.getMessage)
     }
 
   def getAllUnspentBox(address: Address): List[InputBox] =
@@ -95,7 +95,7 @@ class BaseClient(nodeInfo: NodeInfo) {
 
         coveringBoxes
       } catch {
-        case _: Throwable => throw ConnectionException()
+        case e: Throwable => throw ConnectionException(e.getMessage)
       }
     )
 
@@ -115,7 +115,7 @@ class BaseClient(nodeInfo: NodeInfo) {
 
         coveringBoxes.asScala.toList
       } catch {
-        case _: Throwable => throw ConnectionException()
+        case e: Throwable => throw ConnectionException(e.getMessage)
       }
     )
 }

@@ -1,9 +1,10 @@
-package json
+package edge.json
 
-import errors.ParseException
+import edge.errors.ParseException
 import io.circe.{Json => ciJson}
-import json.Register.Register
-import org.ergoplatform.appkit.{ErgoId, ErgoToken, ErgoValue}
+import edge.json.Register.Register
+import org.ergoplatform.appkit.ErgoValue
+import org.ergoplatform.sdk.{ErgoId, ErgoToken}
 import special.collection.Coll
 
 object ErgoJson {

@@ -1,18 +1,18 @@
 package edge.pay
 
-import commons.ErgCommons
-import config.{MainNetNodeConfig, TestNetNodeConfig}
+import edge.commons.ErgCommons
+import edge.config.{MainNetNodeConfig, TestNetNodeConfig}
 import org.ergoplatform.appkit.{
   Address,
   BoxOperations,
   ErgoContract,
-  ErgoToken,
   NetworkType,
   ReducedTransaction,
   RestApiErgoClient,
   UnsignedTransaction
 }
-import utils.ContractUtils
+import edge.utils.ContractUtils
+import org.ergoplatform.sdk.ErgoToken
 
 object ErgoPayUtils {
 

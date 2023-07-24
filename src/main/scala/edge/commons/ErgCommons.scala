@@ -1,4 +1,4 @@
-package commons
+package edge.commons
 
 import org.ergoplatform.ErgoBox
 import org.ergoplatform.appkit.Parameters
@@ -8,7 +8,7 @@ object ErgCommons {
   val MinMinerFee: Long = Parameters.MinFee
   val InfiniteBoxValue: Long = Long.MaxValue
   val minValuePerByte: Int = 360
-  val FourKbBoxFee: Long = ErgoBox.MaxBoxSize * minValuePerByte
+  val FourKbBoxFee: Long = (ErgoBox.MaxBoxSize * minValuePerByte).toLong
 
   def nanoErgsToErgs(nanoErgAmount: Long): Double = {
     val ergsValue = nanoErgAmount.toDouble / Parameters.OneErg

@@ -1,4 +1,4 @@
-package config
+package edge.config
 
 object MainNetNodeConfig extends ConfigHelper {
   lazy val nodeUrl: String = readKey(s"node.MAINNET.url").replaceAll("/$", "")

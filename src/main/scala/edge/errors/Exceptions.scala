@@ -1,4 +1,4 @@
-package errors
+package edge.errors
 
 final case class InvalidRecaptchaException(
   private val message: String = "Invalid recaptcha"

@@ -1,7 +1,7 @@
+import edge.registers.{Register, RegisterTypeException}
 import org.ergoplatform.appkit.{ErgoType, ErgoValue}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
-import registers.{Register, RegisterTypeException}
 
 import java.math.BigInteger
 

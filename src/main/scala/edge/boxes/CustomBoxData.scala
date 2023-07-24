@@ -1,13 +1,13 @@
-package boxes
+package edge.boxes
 
 import org.ergoplatform.appkit.{
   BlockchainContext,
   ErgoContract,
-  ErgoToken,
   ErgoValue,
   OutBox,
   UnsignedTransactionBuilder
 }
+import org.ergoplatform.sdk.ErgoToken
 
 case class CustomBoxData(
   customValue: Option[Long] = None,

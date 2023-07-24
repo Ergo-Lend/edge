@@ -1,7 +1,8 @@
-package registers
+package edge.registers
 
-import org.ergoplatform.appkit.JavaHelpers.JLongRType
-import org.ergoplatform.appkit.{ErgoType, ErgoValue, Iso, JavaHelpers}
+import org.ergoplatform.appkit.{ErgoType, ErgoValue}
+import org.ergoplatform.sdk.JavaHelpers.JLongRType
+import org.ergoplatform.sdk.{Iso, JavaHelpers}
 import sigmastate.Values.SigmaBoolean
 import special.collection.Coll
 import special.sigma.SigmaProp
@@ -35,16 +36,35 @@ class Register[T](val value: T) extends IRegVal[T] {
       case cl: Coll[Long]   => ErgoType.collType(ErgoType.longType())
       case ararb: Array[Array[Byte]] =>
         ErgoType.collType(ErgoType.collType(ErgoType.byteType()))
-      case pis: (Int, String) =>
-        ErgoType.pairType(
-          ErgoType.integerType(),
-          ErgoType.collType(ErgoType.byteType())
-        )
-      case pls: (Long, String) =>
-        ErgoType.pairType(
-          ErgoType.longType(),
-          ErgoType.collType(ErgoType.byteType())
-        )
+      case pair: (T, T) => {
+        pair match {
+          case (o: Int, t: String) =>
+            ErgoType.pairType(
+              ErgoType.integerType(),
+              ErgoType.collType(ErgoType.byteType())
+            )
+          case (o: Long, t: String) =>
+            ErgoType.pairType(
+              ErgoType.longType(),
+              ErgoType.collType(ErgoType.byteType())
+            )
+          case (o: Long, t: Long) =>
+            ErgoType.pairType(
+              ErgoType.longType(),
+              ErgoType.longType()
+            )
+          case (o: Coll[Byte], t: Coll[Byte]) =>
+            ErgoType.pairType(
+              ErgoType.collType(ErgoType.byteType()),
+              ErgoType.collType(ErgoType.byteType())
+            )
+          case (o: Array[Byte], t: Array[Byte]) =>
+            ErgoType.pairType(
+              ErgoType.collType(ErgoType.byteType()),
+              ErgoType.collType(ErgoType.byteType())
+            )
+        }
+      }
       case _ =>
         RegisterTypeException("Could not determine ErgoType for given RegVal")
     }
@@ -126,20 +146,45 @@ class Register[T](val value: T) extends IRegVal[T] {
             ErgoType.collType(ErgoType.byteType())
           )
         )
-      case pis: (Int, String) =>
-        Option(
-          ErgoValue.pairOf(
-            ErgoValue.of(pis._1),
-            ErgoValue.of(pis._2.getBytes())
-          )
-        )
-      case pls: (Long, String) =>
-        Option(
-          ErgoValue.pairOf(
-            ErgoValue.of(pls._1),
-            ErgoValue.of(pls._2.getBytes())
-          )
-        )
+      case pair: (T, T) => {
+        pair match {
+          case (o: Int, t: String) =>
+            Option(
+              ErgoValue.pairOf(
+                ErgoValue.of(o),
+                ErgoValue.of(t.getBytes())
+              )
+            )
+          case (o: Long, t: String) =>
+            Option(
+              ErgoValue.pairOf(
+                ErgoValue.of(o),
+                ErgoValue.of(t.getBytes())
+              )
+            )
+          case (o: Long, t: Long) =>
+            Option(
+              ErgoValue.pairOf(
+                ErgoValue.of(o),
+                ErgoValue.of(t)
+              )
+            )
+          case (o: Coll[Byte], t: Coll[Byte]) =>
+            Option(
+              ErgoValue.pairOf(
+                ErgoValue.of(o.toArray),
+                ErgoValue.of(t.toArray)
+              )
+            )
+          case (o: Array[Byte], t: Array[Byte]) =>
+            Option(
+              ErgoValue.pairOf(
+                ErgoValue.of(o),
+                ErgoValue.of(t)
+              )
+            )
+        }
+      }
       case _ =>
         RegisterTypeException("Could not determine ErgoValue for given RegVal")
     }

@@ -1,4 +1,4 @@
-package config
+package edge.config
 
 import com.typesafe.config.ConfigFactory
 import play.api.Configuration

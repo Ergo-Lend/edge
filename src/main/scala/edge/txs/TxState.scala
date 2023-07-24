@@ -1,4 +1,4 @@
-package txs
+package edge.txs
 
 /**
   * Unsuccessful - Tx is not sent to mempool (0)
