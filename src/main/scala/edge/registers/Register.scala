@@ -5,7 +5,7 @@ import org.ergoplatform.sdk.JavaHelpers.JLongRType
 import org.ergoplatform.sdk.{Iso, JavaHelpers}
 import sigmastate.Values.SigmaBoolean
 import special.collection.Coll
-import special.sigma.SigmaProp
+import special.sigma.{GroupElement, SigmaProp}
 
 import java.math.BigInteger
 
@@ -20,14 +20,15 @@ class Register[T](val value: T) extends IRegVal[T] {
   // TODO: Fix typing for empty arrays. Maybe use shapeless?
   override def ergoType: ErgoType[_] =
     value match {
-      case i: Int         => ErgoType.integerType()
-      case l: Long        => ErgoType.longType()
-      case b: Byte        => ErgoType.byteType()
-      case bI: BigInteger => ErgoType.bigIntType()
-      case sp: SigmaProp  => ErgoType.sigmaPropType()
-      case sh: Short      => ErgoType.shortType()
-      case bl: Boolean    => ErgoType.booleanType()
-      case str: String    => ErgoType.collType(ErgoType.byteType())
+      case i: Int           => ErgoType.integerType()
+      case l: Long          => ErgoType.longType()
+      case b: Byte          => ErgoType.byteType()
+      case bI: BigInteger   => ErgoType.bigIntType()
+      case sp: SigmaProp    => ErgoType.sigmaPropType()
+      case ge: GroupElement => ErgoType.groupElementType()
+      case sh: Short        => ErgoType.shortType()
+      case bl: Boolean      => ErgoType.booleanType()
+      case str: String      => ErgoType.collType(ErgoType.byteType())
       case ars: Array[String] =>
         ErgoType.collType(ErgoType.collType(ErgoType.byteType()))
       case arl: Array[Long] => ErgoType.collType(ErgoType.longType())
@@ -80,9 +81,11 @@ class Register[T](val value: T) extends IRegVal[T] {
       case b: Byte        => Option(ErgoValue.of(b.asInstanceOf[Byte]))
       case bI: BigInteger => Option(ErgoValue.of(bI.asInstanceOf[BigInteger]))
       case sp: SigmaProp  => Option(ErgoValue.of(sp.asInstanceOf[SigmaBoolean]))
-      case sh: Short      => Option(ErgoValue.of(sh.asInstanceOf[Short]))
-      case bl: Boolean    => Option(ErgoValue.of(bl.asInstanceOf[Boolean]))
-      case str: String    => Option(ErgoValue.of(str.getBytes))
+      case ge: GroupElement =>
+        Option(ErgoValue.of(ge.asInstanceOf[GroupElement]))
+      case sh: Short   => Option(ErgoValue.of(sh.asInstanceOf[Short]))
+      case bl: Boolean => Option(ErgoValue.of(bl.asInstanceOf[Boolean]))
+      case str: String => Option(ErgoValue.of(str.getBytes))
       case ars: Array[String] =>
         Option(
           ErgoValue.of(

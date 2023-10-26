@@ -5,6 +5,7 @@ import org.ergoplatform.{ErgoAddress, ErgoAddressEncoder}
 import org.ergoplatform.appkit.{Address, NetworkType}
 import sigmastate.serialization.ErgoTreeSerializer
 import special.collection.Coll
+import special.sigma.GroupElement
 
 import java.nio.charset.StandardCharsets
 
@@ -23,6 +24,11 @@ class CollBytePairRegister(override val value: (Array[Byte], Array[Byte]))
 class LongPairRegister(override val value: (Long, Long)) extends Register(value)
 
 class LongRegister(override val value: Long) extends Register(value)
+
+class IntRegister(override val value: Int) extends Register(value)
+
+class GroupElementRegister(override val value: GroupElement)
+    extends Register(value)
 
 class StringRegister(val str: String)
     extends Register(CollByte.stringToCollByte(str)) {

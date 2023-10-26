@@ -1,6 +1,6 @@
 package edge.txs
 
-import edge.commons.ErgCommons
+import edge.commons.{ErgCommons, StackTrace}
 import edge.errors.{ProveException, ReducedException}
 import edge.boxes.{BoxWrapper, CustomBoxData}
 import org.bouncycastle.util.encoders.Hex
@@ -55,7 +55,7 @@ trait TTx {
   }
 
   def getOutBoxesAsInputBoxes(
-    txId: String,
+    txId: String = Tx.dummyTxId,
     outBoxes: Seq[OutBox] = getOutBoxes
   ): Seq[InputBox] =
     // Increment number
@@ -262,7 +262,7 @@ trait TTx {
         if (e.getMessage.contains("Script reduced to false")) {
           throw ProveException(e.getMessage)
         } else {
-          throw new Throwable(e.getMessage)
+          throw new Throwable(StackTrace.getStackTraceStr(e))
         }
       }
       case e: InterpreterException => {
@@ -294,10 +294,12 @@ trait TTx {
 
   def reduce(unsignedTx: UnsignedTransaction): ReducedTransaction =
     try {
-      ctx.newProverBuilder().build().reduce(unsignedTx, 0)
+      val unbuiltProverBuilder = ctx.newProverBuilder()
+      val prover = unbuiltProverBuilder.build()
+      prover.reduce(unsignedTx, 0)
     } catch {
       case e: Throwable =>
-        throw ReducedException(e.getMessage)
+        throw ReducedException(StackTrace.getStackTraceStr(e))
     }
 
   def reduceTx: ReducedTransaction =
@@ -316,7 +318,8 @@ object Tx {
 case class Tx(
   override val inputBoxes: Seq[InputBox],
   outBoxes: Seq[BoxWrapper],
-  override val changeAddress: Address
+  override val changeAddress: Address,
+  override val dataInputs: Seq[InputBox] = Seq()
 )(implicit val ctx: BlockchainContext)
     extends TTx {
   override def defineOutBoxWrappers: Seq[BoxWrapper] = outBoxes

@@ -169,12 +169,12 @@ abstract class BoxWrapper extends IBoxRegister {
   }
 
   def getAsInputBox(
-    ctx: BlockchainContext,
-    txB: UnsignedTransactionBuilder,
-    txId: String,
-    index: Int
-  ): InputBox =
-    getOutBox(ctx, txB).convertToInputWith(txId, index.shortValue())
+    txB: UnsignedTransactionBuilder = null,
+    txId: String = Tx.dummyTxId,
+    index: Int = 0
+  )(implicit ctx: BlockchainContext): InputBox =
+    getOutBox(ctx, if (txB == null) { ctx.newTxBuilder() }
+    else txB).convertToInputWith(txId, index.shortValue())
 }
 
 trait IBoxRegister {

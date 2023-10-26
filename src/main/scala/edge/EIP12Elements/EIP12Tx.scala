@@ -11,8 +11,11 @@ case class EIP12Tx(
   outputs: Seq[EIP12BoxCandidate]
 ) {
 
-  def toJson(): String =
-    Json.stringify(Json.toJson(this)(EIP12JsonWriters.eip12Tx))
+  def toJson(): JsValue =
+    Json.toJson(this)(EIP12JsonWriters.eip12Tx)
+
+  def toJsonString(): String =
+    Json.stringify(this.toJson())
 
 }
 
