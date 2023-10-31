@@ -5,7 +5,18 @@ import edge.commons.ErgCommons
 import edge.node.BaseClient
 import edge.txs.Tx
 import edge.utils.ContractUtils
-import org.ergoplatform.appkit.{Address, BlockchainContext, Eip4Token, ErgoProver, InputBox, OutBox, Parameters, ReducedTransaction, SignedTransaction, UnsignedTransactionBuilder}
+import org.ergoplatform.appkit.{
+  Address,
+  BlockchainContext,
+  Eip4Token,
+  ErgoProver,
+  InputBox,
+  OutBox,
+  Parameters,
+  ReducedTransaction,
+  SignedTransaction,
+  UnsignedTransactionBuilder
+}
 import org.ergoplatform.appkit.config.{ErgoNodeConfig, ErgoToolConfig}
 import org.ergoplatform.sdk.{ErgoToken, SecretString}
 
@@ -27,6 +38,51 @@ object BoxTools {
       )
       .withEip3Secret(config.getParameters.get("addressIndex").toInt)
       .build()
+
+  def send(
+    ergAmount: Long,
+    toAddress: Address,
+    tokens: Seq[ErgoToken] = Seq()
+  )(
+    client: BaseClient,
+    config: ErgoToolConfig,
+    nodeConfig: ErgoNodeConfig
+  ): Seq[SignedTransaction] =
+    client.getClient.execute { ctx =>
+      val prover: ErgoProver = getProver(nodeConfig, config)(ctx)
+      val ownerAddress: Address = prover.getEip3Addresses.get(0)
+      val fundBox: Seq[InputBox] = {
+        if (tokens.isEmpty) {
+          client
+            .getCoveringBoxesFor(ownerAddress, ergAmount)
+            .getBoxes
+            .asScala
+            .toSeq
+        } else {
+          client
+            .getCoveringBoxesFor(ownerAddress, ergAmount, tokens.asJava)
+        }
+      }
+
+      val toFundAddressBox: FundsToAddressBox = FundsToAddressBox(
+        address = toAddress,
+        value = ergAmount,
+        tokens = tokens
+      )
+
+      val txB: UnsignedTransactionBuilder = ctx.newTxBuilder()
+
+      val tx = txB
+        .addInputs(fundBox: _*)
+        .addOutputs(toFundAddressBox.getOutBox(ctx, txB))
+        .fee(Parameters.MinFee)
+        .sendChangeTo(ownerAddress)
+        .build()
+
+      val signed: SignedTransaction = prover.sign(tx)
+
+      Seq(signed)
+    }
 
   def mintTokens(
     tokenName: String,
@@ -196,15 +252,15 @@ object BoxTools {
   }
 
   def mutate(
-              boxIdToMutate: String,
-              outBoxes: Seq[BoxWrapper],
-              dataInputs: Seq[InputBox] = Seq(),
-              inputBoxes: Seq[InputBox] = Seq()
-            )(
-              client: BaseClient,
-              config: ErgoToolConfig,
-              nodeConfig: ErgoNodeConfig
-            ): Seq[SignedTransaction] =
+    boxIdToMutate: String,
+    outBoxes: Seq[BoxWrapper],
+    dataInputs: Seq[InputBox] = Seq(),
+    inputBoxes: Seq[InputBox] = Seq()
+  )(
+    client: BaseClient,
+    config: ErgoToolConfig,
+    nodeConfig: ErgoNodeConfig
+  ): Seq[SignedTransaction] =
     client.getClient.execute { ctx =>
       val prover: ErgoProver = getProver(nodeConfig, config)(ctx)
       val ownerAddress: Address = prover.getEip3Addresses.get(0)
@@ -224,13 +280,13 @@ object BoxTools {
     }
 
   def consolidateBoxes(
-                        ergValue: Long,
-                        tokens: Seq[ErgoToken]
-                      )(
-                        client: BaseClient,
-                        config: ErgoToolConfig,
-                        nodeConfig: ErgoNodeConfig
-                      ): Seq[SignedTransaction] =
+    ergValue: Long,
+    tokens: Seq[ErgoToken]
+  )(
+    client: BaseClient,
+    config: ErgoToolConfig,
+    nodeConfig: ErgoNodeConfig
+  ): Seq[SignedTransaction] =
     client.getClient.execute { ctx =>
       val prover: ErgoProver = getProver(nodeConfig, config)(ctx)
       val ownerAddress: Address = prover.getEip3Addresses.get(0)

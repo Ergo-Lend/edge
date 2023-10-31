@@ -23,7 +23,7 @@ case class EIP12UnsignedInput(
 
 }
 
-object EIP12UnsignedInput {
+object EIP12UnsignedInput extends ToEIP12 {
 
   def apply(
     inputbox: InputBox,
@@ -35,10 +35,10 @@ object EIP12UnsignedInput {
     val value: EIP12Value = EIP12Value(inputbox.getValue.toString)
     val ergoTree: EIP12ErgoTree = EIP12ErgoTree(inputbox.getErgoTree.bytesHex)
     val assets: Seq[EIP12TokenAmount] = toAssets(
-      inputbox.getTokens.asScala.toList
+      inputbox.getTokens.asScala.toSeq
     )
     val additionalRegisters: Seq[(String, EIP12Constant)] = toRegisters(
-      inputbox.getRegisters.asScala.toList
+      inputbox.getRegisters.asScala.toSeq
     )
     val creationHeight: Int = inputbox.getCreationHeight
     val transactionId: EIP12TxId = EIP12TxId(inputbox.getTransactionId)
@@ -57,36 +57,4 @@ object EIP12UnsignedInput {
     )
 
   }
-
-  def toAssets(tokens: List[ErgoToken]): Seq[EIP12TokenAmount] = {
-
-    val eip12Tokens: Seq[EIP12TokenAmount] = Seq()
-
-    tokens.foreach { t =>
-      val id = EIP12TokenId(t.getId.toString)
-      val value = EIP12Value(t.getValue.toString)
-      val tokenAmount = EIP12TokenAmount(id, value)
-      eip12Tokens :+ tokenAmount
-    }
-
-    eip12Tokens
-
-  }
-
-  def toRegisters(
-    registers: List[ErgoValue[_]]
-  ): Seq[(String, EIP12Constant)] = {
-
-    val eip12Registers: Seq[(String, EIP12Constant)] = Seq()
-
-    registers.zipWithIndex.foreach {
-      case (elem, index) =>
-        val constant = EIP12Constant(elem.toHex)
-        val registerName = "R" + index
-        eip12Registers :+ (registerName -> constant)
-
-    }
-    eip12Registers
-  }
-
 }
