@@ -63,7 +63,7 @@ trait ToEIP12 {
       registers.zipWithIndex.map {
         case (elem, index) =>
           val constant = EIP12Constant(elem.toHex)
-          val registerName = "R" + index
+          val registerName = "R" + (index + 4)
           (registerName, constant)
       }
 

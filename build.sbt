@@ -7,7 +7,7 @@ organization := """io.github.ergo-lend"""
 organizationName := "exle"
 organizationHomepage := Some(url("https://github.com/ergo-lend/edge"))
 scalaVersion := "2.13.9"
-version := "0.1.8-SNAPSHOT"
+version := "0.1.10-SNAPSHOT"
 description := "Ergo Development Generics"
 licenses := Seq(
   "Apache 2" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt")

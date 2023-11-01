@@ -27,7 +27,7 @@ object EIP12Tx {
         EIP12UnsignedInput(input, context)
       )
     val dataInputs: Seq[EIP12DataInput] =
-      tx.getDataInputs.asScala.map(data => EIP12DataInput(data.getId)).toSeq
+      tx.getDataInputs.asScala.map(dataInput => EIP12DataInput(dataInput)).toSeq
     val outputs: Seq[EIP12BoxCandidate] =
       tx.getOutputs.asScala.map(output => EIP12BoxCandidate(output)).toSeq
 
