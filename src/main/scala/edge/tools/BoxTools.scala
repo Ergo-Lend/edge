@@ -3,7 +3,7 @@ package edge.tools
 import edge.boxes.{BoxWrapper, FundsToAddressBox}
 import edge.commons.ErgCommons
 import edge.node.BaseClient
-import edge.txs.Tx
+import edge.txs.{BurnTokenTx, Tx}
 import edge.utils.ContractUtils
 import org.ergoplatform.appkit.{
   Address,
@@ -314,4 +314,34 @@ object BoxTools {
 
       Seq(signed)
     }
+
+  def burnTokens(
+    tokensToBurn: Seq[ErgoToken]
+  )(
+    client: BaseClient,
+    config: ErgoToolConfig,
+    nodeConfig: ErgoNodeConfig
+  ): Seq[SignedTransaction] =
+    client.getClient.execute { ctx =>
+      val prover: ErgoProver = getProver(nodeConfig, config)(ctx)
+      val ownerAddress: Address = prover.getEip3Addresses.get(0)
+
+      val coveringBoxes: List[InputBox] = client
+        .getCoveringBoxesFor(
+          ownerAddress,
+          Parameters.MinFee * 2,
+          tokensToBurn.toList.asJava
+        )
+
+      val tx: BurnTokenTx = BurnTokenTx(
+        inputBoxes = coveringBoxes,
+        changeAddress = ownerAddress,
+        tokensToBurn = tokensToBurn
+      )(ctx)
+
+      val signed: SignedTransaction = tx.signTxWithProver(prover)
+
+      Seq(signed)
+    }
+
 }

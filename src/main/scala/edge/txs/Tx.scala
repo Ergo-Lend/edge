@@ -2,7 +2,7 @@ package edge.txs
 
 import edge.commons.{ErgCommons, StackTrace}
 import edge.errors.{ProveException, ReducedException}
-import edge.boxes.{BoxWrapper, CustomBoxData}
+import edge.boxes.{BoxWrapper, CustomBoxData, FundsToAddressBox}
 import org.bouncycastle.util.encoders.Hex
 import org.ergoplatform.appkit.{
   Address,
@@ -23,6 +23,7 @@ import sigmastate.exceptions.InterpreterException
 import special.collection.Coll
 
 import scala.collection.JavaConverters.collectionAsScalaIterableConverter
+import scala.collection.convert.ImplicitConversions.`iterable AsScalaIterable`
 
 trait TTx {
   val changeAddress: Address
@@ -323,4 +324,54 @@ case class Tx(
 )(implicit val ctx: BlockchainContext)
     extends TTx {
   override def defineOutBoxWrappers: Seq[BoxWrapper] = outBoxes
+}
+
+case class BurnTokenTx(
+  override val inputBoxes: Seq[InputBox],
+  override val changeAddress: Address,
+  override val tokensToBurn: Seq[ErgoToken]
+)(implicit val ctx: BlockchainContext)
+    extends TTx {
+
+  override def defineOutBoxWrappers: Seq[BoxWrapper] = {
+
+    def addTokens(inputBoxes: Seq[InputBox]): Seq[ErgoToken] =
+      inputBoxes
+        .flatMap(box => box.getTokens.toSeq) // Flatten the sequences of ErgoTokens
+        .groupBy(_.id) // Group ErgoTokens by id
+        .mapValues(_.map(_.value).sum) // Sum the values for each id
+        .toSeq // Convert the map back to a sequence of ErgoTokens
+        .map { case (id, value) => ErgoToken(id, value) }
+    val inputTokens: Seq[ErgoToken] = addTokens(inputBoxes)
+
+    def removeTokens(
+      tokens: Seq[ErgoToken],
+      tokensToRemove: Seq[ErgoToken]
+    ): Seq[ErgoToken] = {
+      val tokensToRemoveMap =
+        tokensToRemove.groupBy(_.id).mapValues(_.map(_.value).sum)
+
+      tokens
+        .groupBy(_.id)
+        .flatMap {
+          case (id, groupTokens) =>
+            val remainingValue =
+              groupTokens.map(_.value).sum - tokensToRemoveMap.getOrElse(id, 0L)
+            if (remainingValue > 0) Some(ErgoToken(id, remainingValue))
+            else None
+        }
+        .toSeq
+    }
+
+    val resultTokens = removeTokens(inputTokens, tokensToBurn)
+
+    Seq(
+      new FundsToAddressBox(
+        value =
+          ((inputBoxes.foldLeft(0L)((acc, box) => acc + box.getValue)) - ErgCommons.MinBoxFee),
+        address = changeAddress,
+        tokens = resultTokens
+      )
+    )
+  }
 }

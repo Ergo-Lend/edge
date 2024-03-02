@@ -87,7 +87,16 @@ object EIP12JsonWriters {
   implicit val eip12DataInputWrites = new Writes[EIP12DataInput] {
 
     override def writes(o: EIP12DataInput): JsValue = Json.obj(
-      "boxId" -> eip12BoxIdWrites.writes(o.boxId)
+      "boxId" -> eip12BoxIdWrites.writes(o.boxId),
+      "value" -> eip12ValueWrites.writes(o.value),
+      "ergoTree" -> eip12ErgoTreeWrites.writes(o.ergoTree),
+      "assets" -> o.assets.map(ta => eip12TokenAmountWrites.writes(ta)),
+      "additionalRegisters" -> eip12AdditionalRegistersWrites.writes(
+        o.additionalRegisters
+      ),
+      "creationHeight" -> o.creationHeight,
+      "transactionId" -> eip12TxIdWrites.writes(o.transactionId),
+      "index" -> o.index
     )
   }
 
