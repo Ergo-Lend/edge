@@ -14,13 +14,13 @@ case class EIP12ContextExtension(values: Seq[(String, String)]) {
 
 object EIP12ContextExtension {
 
-  def apply(extension: List[ContextVar]): EIP12ContextExtension = {
+  def apply(extensions: List[ContextVar]): EIP12ContextExtension = {
 
-    val context: Seq[(String, String)] = Seq()
-    extension.foreach { ext =>
-      val elem = (ext.getId.toHexString, ext.getValue.toHex)
-      context :+ elem
-    }
+    val context: Seq[(String, String)] = extensions.map(
+      extension => {
+        (extension.getId.toHexString, extension.getValue.toHex)
+      }
+    )
 
     EIP12ContextExtension(context)
 

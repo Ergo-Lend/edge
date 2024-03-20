@@ -3,6 +3,7 @@ package edge.explorer
 import edge.commons.StackTrace
 import edge.boxes.TokenBox
 import edge.errors.{ConnectionException, ExplorerException, ParseException}
+import edge.json.BoxData
 import io.circe.Json
 import io.circe.parser.parse
 import edge.node.NodeInfo
@@ -14,8 +15,11 @@ import scalaj.http.{BaseHttp, HttpConstants}
 import sigmastate.serialization.ErgoTreeSerializer
 import edge.txs.TxState
 import edge.txs.TxState.TxState
+import org.ergoplatform.explorer.client.{DefaultApi, ExplorerApiClient}
 import org.ergoplatform.sdk.ErgoId
+import io.circe.parser.decode
 
+import scala.collection.convert.ImplicitConversions.`iterable AsScalaIterable`
 import scala.util.{Failure, Success, Try}
 
 abstract class Explorer(nodeInfo: NodeInfo) {
@@ -23,13 +27,17 @@ abstract class Explorer(nodeInfo: NodeInfo) {
 
   private val baseUrlV0 = s"${nodeInfo.explorerUrl}/api/v0"
   private val baseUrlV1 = s"${nodeInfo.explorerUrl}/api/v1"
+  private val nodeUrl = s"${nodeInfo.nodeUrl}"
   private val tx = s"$baseUrlV1/transactions"
   private val unconfirmedTx = s"$baseUrlV0/transactions/unconfirmed"
+  private val unconfirmedTxV1 = s"$nodeUrl/transactions/unconfirmed"
 
   private val unspentBoxesByTokenId =
     s"$baseUrlV1/boxes/unspent/byTokenId"
   private val boxesP1 = s"$baseUrlV1/boxes"
   private val mempoolTransactions = s"$baseUrlV1/mempool/transactions/byAddress"
+  private val mempoolBoxesByTokenId = s"$unconfirmedTxV1/outputs/byTokenId"
+  private val mempoolTxByTxId = s"$unconfirmedTxV1/byTransactionId"
 
   def getTxsInMempoolByAddress(address: String): Json =
     try {
@@ -122,6 +130,26 @@ abstract class Explorer(nodeInfo: NodeInfo) {
     try {
       GetRequest.httpGet(
         s"$unconfirmedTx/byAddress/$address/?offset=0&limit=100"
+      )
+    } catch {
+      case _: Throwable => Json.Null
+    }
+
+  def getUnconfirmedInputBoxByTokenId(tokenId: String): Json =
+    try {
+      val url = s"$mempoolBoxesByTokenId/$tokenId"
+      GetRequest.httpGet(
+        url
+      )
+    } catch {
+      case _: Throwable => Json.Null
+    }
+
+  def getUnconfirmedTxByTxId(txId: String): Json =
+    try {
+      val url = s"$mempoolTxByTxId/$txId"
+      GetRequest.httpGet(
+        url
       )
     } catch {
       case _: Throwable => Json.Null
@@ -232,6 +260,39 @@ abstract class Explorer(nodeInfo: NodeInfo) {
         logger.error(StackTrace.getStackTraceStr(e))
         throw new Throwable("Something is wrong")
     }
+
+  def getMempoolBoxesByTokenId(
+                              tokenId: String,
+                            ): List[BoxData] =
+    try {
+      val result = getUnconfirmedInputBoxByTokenId(tokenId).toString()
+      val parsedResult = decode[List[BoxData]](result)
+      parsedResult match {
+        case Right(boxDataList) =>
+          if (boxDataList.isEmpty) {
+            List()
+          } else {
+            // Successfully parsed non-empty JSON array
+            boxDataList
+          }
+        case Left(error) =>
+          // Failed to parse JSON data
+          throw ParseException(s"Failed to parse JSON: $error")
+      }
+    }
+
+  def getMempoolBoxesAsInputBox(boxDatas: List[BoxData], ctx: BlockchainContext): Seq[InputBox] = {
+    boxDatas.flatMap(boxData => {
+      val jsonResult = getUnconfirmedTxByTxId(boxData.transactionId)
+      val tmpTx = ctx.signedTxFromJson(jsonResult.toString())
+
+      tmpTx.getOutputsToSpend.toSeq
+    })
+  }
+
+  def getMempoolBoxesByTokenIdAsInputBoxes(tokenId: String, ctx: BlockchainContext): Seq[InputBox] = {
+    getMempoolBoxesAsInputBox(getMempoolBoxesByTokenId(tokenId), ctx)
+  }
 
   def findMempoolBox(
     address: String,

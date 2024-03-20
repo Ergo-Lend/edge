@@ -1,6 +1,6 @@
 package edge.EIP12Elements
 
-import org.ergoplatform.appkit.{ContextVar, UnsignedTransaction}
+import org.ergoplatform.appkit.{ContextVar, InputBox, UnsignedTransaction}
 import play.api.libs.json._
 
 import scala.collection.JavaConverters._
@@ -21,11 +21,20 @@ case class EIP12Tx(
 
 object EIP12Tx {
 
-  def apply(tx: UnsignedTransaction, context: List[ContextVar]): EIP12Tx = {
+  def apply(tx: UnsignedTransaction, context: Seq[Option[List[ContextVar]]]): EIP12Tx = {
     val inputs: Seq[EIP12UnsignedInput] =
-      tx.getInputs.asScala.toSeq.map(input =>
-        EIP12UnsignedInput(input, context)
+      tx.getInputs.asScala.toSeq.zipWithIndex.map((indexedInputs) =>
+        {
+          val boxContextVar: List[ContextVar] = if (context.size > indexedInputs._2) {
+            context(indexedInputs._2).getOrElse(List())
+          } else List()
+
+          EIP12UnsignedInput(
+            indexedInputs._1,
+            boxContextVar)
+        }
       )
+
     val dataInputs: Seq[EIP12DataInput] =
       tx.getDataInputs.asScala.map(dataInput => EIP12DataInput(dataInput)).toSeq
     val outputs: Seq[EIP12BoxCandidate] =
